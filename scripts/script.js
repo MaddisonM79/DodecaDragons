@@ -1323,40 +1323,86 @@ function updateFire() {
       else if (game.currentHellLayer >= 4) game.firePerSecond = new Decimal(0)
     }
   }
-  document.getElementById("fire").textContent = format(game.fire, 0)
-  document.getElementById("firePerSecond").textContent = format(game.firePerSecond, 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('fire', format(game.fire, 0))
+    window.ui.update.setText('firePerSecond', format(game.firePerSecond, 0))
+  } else {
+    document.getElementById("fire").textContent = format(game.fire, 0)
+    document.getElementById("firePerSecond").textContent = format(game.firePerSecond, 0)
+  }
 
   //Fire gold multiplier formula and multipliers
   if (game.darkMagicUpgradesBought[5]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)))}
   else if (game.magicUpgradesBought[8]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)))}
   else {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)))}
-  document.getElementById("fireGoldMultiplier").textContent = format(game.fireGoldMultiplier, 2)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('fireGoldMultiplier', format(game.fireGoldMultiplier, 2))
+  } else {
+    document.getElementById("fireGoldMultiplier").textContent = format(game.fireGoldMultiplier, 2)
+  }
 
-  document.getElementsByClassName("resourceText")[0].textContent = format(game.gold, 0)
-  document.getElementsByClassName("resourceText")[1].textContent = format(game.miners, 0)
-  if (game.unlocks >= 1) document.getElementsByClassName("resourceText")[2].textContent = format(game.fire, 0)
+  // Update resource panel
+  if (window.ui && window.ui.update) {
+    window.ui.update.setResourceText(0, format(game.gold, 0))
+    window.ui.update.setResourceText(1, format(game.miners, 0))
+    if (game.unlocks >= 1) window.ui.update.setResourceText(2, format(game.fire, 0))
+  } else {
+    const resourceRows = document.getElementsByClassName("resourceText")
+    if (resourceRows.length > 0) {
+      resourceRows[0].textContent = format(game.gold, 0)
+      resourceRows[1].textContent = format(game.miners, 0)
+      if (game.unlocks >= 1) resourceRows[2].textContent = format(game.fire, 0)
+    }
+  }
+
   if (game.unlocks >= 2) {
-    //Enables/disables fire upgrade buttons based on whether the user's fire is higher than the cost (code can be made better)
-    if (game.fire.gte(game.fireUpgrade1Cost) && game.fireUpgrade1Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[0].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[0].disabled = true}
-    if (game.fire.gte(game.fireUpgrade2Cost) && game.fireUpgrade2Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[1].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[1].disabled = true}
-    if (game.fire.gte(game.fireUpgrade3Cost) && game.fireUpgrade3Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[2].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[2].disabled = true}
-    if (game.fire.gte(game.fireUpgrade4Cost) && game.fireUpgrade4Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[3].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[3].disabled = true}
-    if (game.fire.gte(game.fireUpgrade5Cost) && game.fireUpgrade5Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[4].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[4].disabled = true}
-    if (game.fire.gte(game.fireUpgrade6Cost) && game.fireUpgrade6Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[5].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[5].disabled = true}
-    if (game.darkMagicUpgradesBought[5]) {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
-    else if (game.magicUpgradesBought[8]) {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
-    else {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
-    if (game.magicUpgradesBought[8]) {document.getElementById("fireUpgrade3Effect").textContent = format(game.fireUpgrade3Bought.pow(12).mul(4).add(1), 2)}
-    else {document.getElementById("fireUpgrade3Effect").textContent = format(game.fireUpgrade3Bought.pow(2.6).mul(4).add(1), 2)}
-    if (game.platinumUpgradesBought[8] > 0) {document.getElementById("fireUpgrade4Effect").textContent = format(game.fireUpgrade4Bought.pow(game.miners.pow(0.3)).pow(game.platinumUpgradesBought[8] / 4).add(1), 2)}
-    else {document.getElementById("fireUpgrade4Effect").textContent = format(game.fireUpgrade4Bought.pow(1.5).mul(game.miners).div(50).add(1), 2)}
-    document.getElementById("fireUpgrade5Effect").textContent = format(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1), 2)
+    //Enables/disables fire upgrade buttons based on whether the user's fire is higher than the cost
+    if (window.ui && window.ui.update) {
+      window.ui.update.setClassDisabled('fireUpgrade', 0, !(game.fire.gte(game.fireUpgrade1Cost) && game.fireUpgrade1Cost.lt("e1e9")))
+      window.ui.update.setClassDisabled('fireUpgrade', 1, !(game.fire.gte(game.fireUpgrade2Cost) && game.fireUpgrade2Cost.lt("e1e9")))
+      window.ui.update.setClassDisabled('fireUpgrade', 2, !(game.fire.gte(game.fireUpgrade3Cost) && game.fireUpgrade3Cost.lt("e1e9")))
+      window.ui.update.setClassDisabled('fireUpgrade', 3, !(game.fire.gte(game.fireUpgrade4Cost) && game.fireUpgrade4Cost.lt("e1e9")))
+      window.ui.update.setClassDisabled('fireUpgrade', 4, !(game.fire.gte(game.fireUpgrade5Cost) && game.fireUpgrade5Cost.lt("e1e9")))
+      window.ui.update.setClassDisabled('fireUpgrade', 5, !(game.fire.gte(game.fireUpgrade6Cost) && game.fireUpgrade6Cost.lt("e1e9")))
+    } else {
+      const fireUpgradeButtons = document.getElementsByClassName("fireUpgrade")
+      if (fireUpgradeButtons.length >= 6) {
+        fireUpgradeButtons[0].disabled = !(game.fire.gte(game.fireUpgrade1Cost) && game.fireUpgrade1Cost.lt("e1e9"))
+        fireUpgradeButtons[1].disabled = !(game.fire.gte(game.fireUpgrade2Cost) && game.fireUpgrade2Cost.lt("e1e9"))
+        fireUpgradeButtons[2].disabled = !(game.fire.gte(game.fireUpgrade3Cost) && game.fireUpgrade3Cost.lt("e1e9"))
+        fireUpgradeButtons[3].disabled = !(game.fire.gte(game.fireUpgrade4Cost) && game.fireUpgrade4Cost.lt("e1e9"))
+        fireUpgradeButtons[4].disabled = !(game.fire.gte(game.fireUpgrade5Cost) && game.fireUpgrade5Cost.lt("e1e9"))
+        fireUpgradeButtons[5].disabled = !(game.fire.gte(game.fireUpgrade6Cost) && game.fireUpgrade6Cost.lt("e1e9"))
+      }
+    }
+
+    // Update effect text
+    let fireUpgrade2EffectValue
+    if (game.darkMagicUpgradesBought[5]) fireUpgrade2EffectValue = format(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)), 2)
+    else if (game.magicUpgradesBought[8]) fireUpgrade2EffectValue = format(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)), 2)
+    else fireUpgrade2EffectValue = format(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)), 2)
+
+    let fireUpgrade3EffectValue
+    if (game.magicUpgradesBought[8]) fireUpgrade3EffectValue = format(game.fireUpgrade3Bought.pow(12).mul(4).add(1), 2)
+    else fireUpgrade3EffectValue = format(game.fireUpgrade3Bought.pow(2.6).mul(4).add(1), 2)
+
+    let fireUpgrade4EffectValue
+    if (game.platinumUpgradesBought[8] > 0) fireUpgrade4EffectValue = format(game.fireUpgrade4Bought.pow(game.miners.pow(0.3)).pow(game.platinumUpgradesBought[8] / 4).add(1), 2)
+    else fireUpgrade4EffectValue = format(game.fireUpgrade4Bought.pow(1.5).mul(game.miners).div(50).add(1), 2)
+
+    const fireUpgrade5EffectValue = format(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1), 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('fireUpgrade2Effect', fireUpgrade2EffectValue)
+      window.ui.update.setText('fireUpgrade3Effect', fireUpgrade3EffectValue)
+      window.ui.update.setText('fireUpgrade4Effect', fireUpgrade4EffectValue)
+      window.ui.update.setText('fireUpgrade5Effect', fireUpgrade5EffectValue)
+    } else {
+      document.getElementById("fireUpgrade2Effect").textContent = fireUpgrade2EffectValue
+      document.getElementById("fireUpgrade3Effect").textContent = fireUpgrade3EffectValue
+      document.getElementById("fireUpgrade4Effect").textContent = fireUpgrade4EffectValue
+      document.getElementById("fireUpgrade5Effect").textContent = fireUpgrade5EffectValue
+    }
   }
 }
 
@@ -1496,8 +1542,17 @@ updateSmall()
 // Helper function: Update platinum calculations
 function updatePlatinum() {
   if (game.unlocks >= 3) {
-    document.getElementById("platinum").textContent = format(game.platinum, 0)
-    document.getElementsByClassName("resourceText")[3].textContent = format(game.platinum, 0)
+    // Update platinum display
+    const platinumFormatted = format(game.platinum, 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('platinum', platinumFormatted)
+      window.ui.update.setResourceText(3, platinumFormatted)
+    } else {
+      document.getElementById("platinum").textContent = platinumFormatted
+      const resourceRows = document.getElementsByClassName("resourceText")
+      if (resourceRows.length > 3) resourceRows[3].textContent = platinumFormatted
+    }
+
     //Determines the amount of platinum to get when converting gold
     game.platinumToGet = game.gold.add(1).log2().mul(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)))
     if (game.unlocks >= 7) game.platinumToGet = game.platinumToGet.mul(1.2 ** game.uraniumUpgradesBought[0])
@@ -1514,15 +1569,35 @@ function updatePlatinum() {
       else if (game.currentHellLayer == 5) game.platinumToGet = game.platinumToGet.add(1).log10().pow(0.5)
     }
     game.platinumToGet = game.platinumToGet.floor()
-    document.getElementById("platinumToGet").textContent = format(game.platinumToGet, 0)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('platinumToGet', format(game.platinumToGet, 0))
+    } else {
+      document.getElementById("platinumToGet").textContent = format(game.platinumToGet, 0)
+    }
+
     if (game.platinumToGet.gt(game.bestPlatinumToGet)) game.bestPlatinumToGet = game.platinumToGet
-    document.getElementById("extraPlatinumPerSecond").textContent = format(Decimal.max(game.bestPlatinumToGet.div(10), 2), 0)
+
+    const extraPlatinumPerSecond = format(Decimal.max(game.bestPlatinumToGet.div(10), 2), 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('extraPlatinumPerSecond', extraPlatinumPerSecond)
+    } else {
+      document.getElementById("extraPlatinumPerSecond").textContent = extraPlatinumPerSecond
+    }
+
     if (game.uraniumUpgradesBought[3]) {platinumUpgrade6Effect = game.platinum.add(1).pow(game.platinumUpgradesBought[5] * 1.2)}
     else {platinumUpgrade6Effect = game.platinum.add(1).log10().add(1).pow(game.platinumUpgradesBought[5] * 1.2)}
     if (game.challengesActive && game.selectedChallenges[3]) platinumUpgrade6Effect = platinumUpgrade6Effect.div(1e25)
-    document.getElementById("platinumUpgrade6Effect").textContent = format(platinumUpgrade6Effect, 2)
-    if (game.magicUpgradesBought[10]) {document.getElementById("platinumUpgrade7Max").textContent = "20"}
-    else {document.getElementById("platinumUpgrade7Max").textContent = "10"}
+
+    const platinumUpgrade7MaxText = game.magicUpgradesBought[10] ? "20" : "10"
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('platinumUpgrade6Effect', format(platinumUpgrade6Effect, 2))
+      window.ui.update.setText('platinumUpgrade7Max', platinumUpgrade7MaxText)
+    } else {
+      document.getElementById("platinumUpgrade6Effect").textContent = format(platinumUpgrade6Effect, 2)
+      document.getElementById("platinumUpgrade7Max").textContent = platinumUpgrade7MaxText
+    }
   }
 }
 
@@ -1547,34 +1622,53 @@ function updateAdvancedResources() {
     //if (game.darkMagicUpgradesBought[9] == true) game.magicToGet = game.magicToGet.pow(1.1)
     //if (game.darkMagicUpgradesBought[1]) game.magicToGet = game.magicToGet.pow(game.uranium.add(1).log10().div(30).add(1))
     game.magicToGet = getMagicGain()
-    document.getElementById("magicToGet").textContent = format(game.magicToGet, 0)
-    if (game.unlocks >= 10) {document.getElementById("nextMagic").textContent = ""}
-    else {document.getElementById("nextMagic").innerHTML = "Next magic at " + format(getNextMagicAt(), 0) + " gold<br>"}
-    //document.getElementById("nextMagic").innerHTML = "Next magic at " + format(getNextMagicAt(), 0) + " gold<br>"
-    document.getElementById("magic").textContent = format(game.magic, 0)
-    document.getElementsByClassName("resourceText")[4].textContent = format(game.magic, 0)
+    const magicToGetText = format(game.magicToGet, 0)
+    const magicText = format(game.magic, 0)
+    const nextMagicContent = game.unlocks >= 10 ? "" : "Next magic at " + format(getNextMagicAt(), 0) + " gold<br>"
+
     game.magicEffect = game.magic.mul(3).mul(new Decimal(1.5).pow(game.platinumUpgradesBought[6])).add(1)
     if (game.magicUpgradesBought[15]) game.magicEffect = game.magicEffect.pow(2)
     if (game.plutoniumUpgradesBought[1] > 0) game.magicEffect = game.magicEffect.pow((game.plutoniumUpgradesBought[1] * 100000) ** 0.8 + 1)
     if (game.inHell && game.currentHellLayer >= 5) game.magicEffect = game.magicEffect.add(1).log10()
     if (game.challengesActive && game.selectedChallenges[0]) game.magicEffect = game.magic.pow(0.2).div(1e15)
+
+    const magicEffectCapText = game.magicEffect.gt("e1000") ? " (softcapped)" : ""
     if (game.magicEffect.gt("e1000")) {
       game.magicEffect = game.magicEffect.mul("e1000").pow(0.5)
-      document.getElementById("magicEffectCap").textContent = " (softcapped)"
     }
-    else {document.getElementById("magicEffectCap").textContent = ""}
     if (game.magicEffect.gt("e100000")) {game.magicEffect = game.magicEffect.mul("e900000").pow(0.1)}
-    document.getElementById("magicEffect").textContent = format(game.magicEffect, 2)
-    document.getElementById("magicUpgrade1Effect").textContent = format(game.gold.add(1).log10().add(1), 2)
-    if (game.magicUpgradesBought[9]) {
-      document.getElementById("magicUpgrade4Effect").textContent = format(game.magic.add(1).log2().mul(4).add(1), 2)
-      document.getElementById("magicUpgrade6Effect").textContent = format(game.miners.pow(3).add(1), 2)
+
+    const magicUpgrade4EffectText = game.magicUpgradesBought[9]
+      ? format(game.magic.add(1).log2().mul(4).add(1), 2)
+      : format(game.magic.add(1).log2().mul(1.5).add(1), 2)
+
+    const magicUpgrade6EffectText = game.magicUpgradesBought[9]
+      ? format(game.miners.pow(3).add(1), 2)
+      : format(game.miners.pow(1.5).add(1), 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('magicToGet', magicToGetText)
+      window.ui.update.setHTML('nextMagic', nextMagicContent)
+      window.ui.update.setText('magic', magicText)
+      window.ui.update.setResourceText(4, magicText)
+      window.ui.update.setText('magicEffectCap', magicEffectCapText)
+      window.ui.update.setText('magicEffect', format(game.magicEffect, 2))
+      window.ui.update.setText('magicUpgrade1Effect', format(game.gold.add(1).log10().add(1), 2))
+      window.ui.update.setText('magicUpgrade4Effect', magicUpgrade4EffectText)
+      window.ui.update.setText('magicUpgrade6Effect', magicUpgrade6EffectText)
+      window.ui.update.setText('magicUpgrade5Effect', format(game.gold.add(1).log2().add(1), 2))
+    } else {
+      document.getElementById("magicToGet").textContent = magicToGetText
+      document.getElementById("nextMagic").innerHTML = nextMagicContent
+      document.getElementById("magic").textContent = magicText
+      document.getElementsByClassName("resourceText")[4].textContent = magicText
+      document.getElementById("magicEffectCap").textContent = magicEffectCapText
+      document.getElementById("magicEffect").textContent = format(game.magicEffect, 2)
+      document.getElementById("magicUpgrade1Effect").textContent = format(game.gold.add(1).log10().add(1), 2)
+      document.getElementById("magicUpgrade4Effect").textContent = magicUpgrade4EffectText
+      document.getElementById("magicUpgrade6Effect").textContent = magicUpgrade6EffectText
+      document.getElementById("magicUpgrade5Effect").textContent = format(game.gold.add(1).log2().add(1), 2)
     }
-    else {
-      document.getElementById("magicUpgrade4Effect").textContent = format(game.magic.add(1).log2().mul(1.5).add(1), 2)
-      document.getElementById("magicUpgrade6Effect").textContent = format(game.miners.pow(1.5).add(1), 2)
-    }
-    document.getElementById("magicUpgrade5Effect").textContent = format(game.gold.add(1).log2().add(1), 2)
   }
   if (game.unlocks >= 5) {
     //Sets the magic score to get from exiting magic challenges
@@ -1602,37 +1696,66 @@ function updateAdvancedResources() {
       game.magicScore2 = Decimal.max(game.magicScoreToGet, game.magicScore2);
       game.magicScore3 = Decimal.max(game.magicScoreToGet, game.magicScore3);
       game.magicScore4 = Decimal.max(game.magicScoreToGet, game.magicScore4);
-      document.getElementById("magicScore1").textContent = format(game.magicScore1, 0)
-      document.getElementById("magicScore2").textContent = format(game.magicScore2, 0)
-      document.getElementById("magicScore3").textContent = format(game.magicScore3, 0)
-      document.getElementById("magicScore4").textContent = format(game.magicScore4, 0)
-      document.getElementById("magicMult1").textContent = format(game.magicScore1.add(1), 0)
-      document.getElementById("magicMult2").textContent = format(game.magicScore2.add(1), 0)
-      document.getElementById("magicMult3").textContent = format(game.magicScore3.add(1), 0)
-      document.getElementById("magicMult4").textContent = format(game.magicScore4.add(1), 0)
+
       if (game.inHell) {game.magifolds = new Decimal(1)}
       else {game.magifolds = game.magicScore1.add(1).mul(game.magicScore2.add(1)).mul(game.magicScore3.add(1)).mul(game.magicScore4.add(1))}
-      document.getElementById("magifolds").textContent = format(game.magifolds, 0)
-      if (game.violetSigilUpgradesBought[2].eq(1)) {document.getElementById("magifoldEffect").textContent = format(game.magifolds.pow(game.magifolds.add(10).log10().log10().add(8)), 2)}
-      else if (game.darkMagicUpgradesBought[3]) {document.getElementById("magifoldEffect").textContent = format(game.magifolds.pow(8), 2)}
-      else if (game.magicUpgradesBought[18]) {document.getElementById("magifoldEffect").textContent = format(game.magifolds.pow(6), 2)}
-      else {document.getElementById("magifoldEffect").textContent = format(game.magifolds.pow(4), 2)}
-      document.getElementsByClassName("resourceText")[5].textContent = format(game.magifolds, 0)
+
+      let magifoldEffectText
+      if (game.violetSigilUpgradesBought[2].eq(1)) magifoldEffectText = format(game.magifolds.pow(game.magifolds.add(10).log10().log10().add(8)), 2)
+      else if (game.darkMagicUpgradesBought[3]) magifoldEffectText = format(game.magifolds.pow(8), 2)
+      else if (game.magicUpgradesBought[18]) magifoldEffectText = format(game.magifolds.pow(6), 2)
+      else magifoldEffectText = format(game.magifolds.pow(4), 2)
+
+      if (window.ui && window.ui.update) {
+        window.ui.update.batchSetText({
+          magicScore1: format(game.magicScore1, 0),
+          magicScore2: format(game.magicScore2, 0),
+          magicScore3: format(game.magicScore3, 0),
+          magicScore4: format(game.magicScore4, 0),
+          magicMult1: format(game.magicScore1.add(1), 0),
+          magicMult2: format(game.magicScore2.add(1), 0),
+          magicMult3: format(game.magicScore3.add(1), 0),
+          magicMult4: format(game.magicScore4.add(1), 0),
+          magifolds: format(game.magifolds, 0),
+          magifoldEffect: magifoldEffectText
+        })
+        window.ui.update.setResourceText(5, format(game.magifolds, 0))
+      } else {
+        document.getElementById("magicScore1").textContent = format(game.magicScore1, 0)
+        document.getElementById("magicScore2").textContent = format(game.magicScore2, 0)
+        document.getElementById("magicScore3").textContent = format(game.magicScore3, 0)
+        document.getElementById("magicScore4").textContent = format(game.magicScore4, 0)
+        document.getElementById("magicMult1").textContent = format(game.magicScore1.add(1), 0)
+        document.getElementById("magicMult2").textContent = format(game.magicScore2.add(1), 0)
+        document.getElementById("magicMult3").textContent = format(game.magicScore3.add(1), 0)
+        document.getElementById("magicMult4").textContent = format(game.magicScore4.add(1), 0)
+        document.getElementById("magifolds").textContent = format(game.magifolds, 0)
+        document.getElementById("magifoldEffect").textContent = magifoldEffectText
+        document.getElementsByClassName("resourceText")[5].textContent = format(game.magifolds, 0)
+      }
     }
-    if (game.challengesActive) {
-      document.getElementById("magicChallengeButton").textContent = "Exit challenges for " + format(game.magicScoreToGet, 0) + " score"
-    }
-    else {
-      game.magicScoreToGet = new Decimal(0)
-      document.getElementById("magicChallengeButton").textContent = "Enter challenges"
+
+    const magicChallengeButtonText = game.challengesActive
+      ? "Exit challenges for " + format(game.magicScoreToGet, 0) + " score"
+      : "Enter challenges"
+    if (!game.challengesActive) game.magicScoreToGet = new Decimal(0)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('magicChallengeButton', magicChallengeButtonText)
+    } else {
+      document.getElementById("magicChallengeButton").textContent = magicChallengeButtonText
     }
   }
   if (game.unlocks >= 6) {
-    document.getElementById("magicUpgrade17Effect").textContent = format(game.magifolds.log10().div(3), 2)
+    const magicUpgrade17EffectText = format(game.magifolds.log10().div(3), 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('magicUpgrade17Effect', magicUpgrade17EffectText)
+    } else {
+      document.getElementById("magicUpgrade17Effect").textContent = magicUpgrade17EffectText
+    }
   }
   if (game.unlocks >= 7) {
-    document.getElementById("uranium").textContent = format(game.uranium, 0)
-    document.getElementsByClassName("resourceText")[6].textContent = format(game.uranium, 0)
+    const uraniumText = format(game.uranium, 0)
     game.uraniumToGet = game.platinum.add(1).log2().mul(1 + 0.1 * game.uraniumUpgradesBought[1])
     if (game.unlocks >= 8) game.uraniumToGet = game.uraniumToGet.mul(2 ** game.platinumUpgradesBought[7])
     if (game.darkMagicUpgradesBought[4]) game.uraniumToGet = game.uraniumToGet.mul(100)
@@ -1659,16 +1782,31 @@ function updateAdvancedResources() {
       else if (game.currentHellLayer == 5) game.uraniumToGet = game.uraniumToGet.add(1).log10().pow(0.5)
     }
     game.uraniumToGet = game.uraniumToGet.floor()
-    document.getElementById("uraniumToGet").textContent = format(game.uraniumToGet, 0)
     if (game.uraniumToGet.gt(game.bestUraniumToGet)) game.bestUraniumToGet = game.uraniumToGet
-    document.getElementById("extraUraniumPerSecond").textContent = format(Decimal.max(game.bestUraniumToGet.div(10), 1), 0)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('uranium', uraniumText)
+      window.ui.update.setResourceText(6, uraniumText)
+      window.ui.update.setText('uraniumToGet', format(game.uraniumToGet, 0))
+      window.ui.update.setText('extraUraniumPerSecond', format(Decimal.max(game.bestUraniumToGet.div(10), 1), 0))
+    } else {
+      document.getElementById("uranium").textContent = uraniumText
+      document.getElementsByClassName("resourceText")[6].textContent = uraniumText
+      document.getElementById("uraniumToGet").textContent = format(game.uraniumToGet, 0)
+      document.getElementById("extraUraniumPerSecond").textContent = format(Decimal.max(game.bestUraniumToGet.div(10), 1), 0)
+    }
   }
   if (game.unlocks >= 9) {
-    document.getElementById("darkMagicUpgrade2Effect").textContent = format(game.uranium.add(1).log10().div(30).add(1), 2)
+    const darkMagicUpgrade2EffectText = format(game.uranium.add(1).log10().div(30).add(1), 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('darkMagicUpgrade2Effect', darkMagicUpgrade2EffectText)
+    } else {
+      document.getElementById("darkMagicUpgrade2Effect").textContent = darkMagicUpgrade2EffectText
+    }
   }
   if (game.unlocks >= 10) {
     game.cyanSigilsToGet = game.gold.add(1).log10().div(new Decimal(3000).sub(game.blueSigilUpgradesBought[2].mul(100))).floor()
-    document.getElementById("nextCyanSigil").textContent = format(new Decimal(10).pow(game.cyanSigilsToGet.add(1).mul(new Decimal(3000).sub(game.blueSigilUpgradesBought[2].mul(100)))), 0)
+    const nextCyanSigilText = format(new Decimal(10).pow(game.cyanSigilsToGet.add(1).mul(new Decimal(3000).sub(game.blueSigilUpgradesBought[2].mul(100)))), 0)
     if (game.darkMagicUpgradesBought[8] == true) game.cyanSigilsToGet = game.cyanSigilsToGet.mul(3)
     game.cyanSigilsToGet = game.cyanSigilsToGet.mul(new Decimal(5).pow(game.dragonPets ** 0.5))
     if (game.unlocks >= 15) game.cyanSigilsToGet = game.cyanSigilsToGet.mul(game.highestKnowledge.div(3).pow(0.7).add(1))
@@ -1677,70 +1815,126 @@ function updateAdvancedResources() {
     if (game.holyTetrahedronUpgradesBought[2]) game.cyanSigilsToGet = game.cyanSigilsToGet.mul(1e50)
 		if (game.unlocks >= 34 && game.deathEssenceUpgradesBought[1].gt(0)) game.cyanSigilsToGet = game.cyanSigilsToGet.mul(new Decimal(10).pow(new Decimal(2).pow(game.deathEssenceUpgradesBought[1].pow(0.5)).mul(1e10)))
     game.cyanSigilsToGet = game.cyanSigilsToGet.round()
-    document.getElementById("cyanSigils").textContent = format(game.cyanSigils, 0)
-    document.getElementById("cyanSigilsToGet").textContent = format(game.cyanSigilsToGet, 0)
-    document.getElementsByClassName("resourceText")[7].textContent = format(game.cyanSigils, 0)
-    document.getElementById("cyanSigilEffect").textContent = format(game.cyanSigils.add(1).pow(2), 0)
     game.cyanSigilPowerPerSecond = game.cyanSigils.pow(2).div(100).mul(game.cyanSigilUpgradesBought[0].add(1))
     if (game.unlocks >= 12) game.cyanSigilPowerPerSecond = game.cyanSigilPowerPerSecond.pow(Decimal.min(new Decimal(1.15).pow(game.indigoSigilUpgradesBought[1].pow(0.5)),30))
     if (game.voidMagicUpgradesBought[2]) game.cyanSigilPowerPerSecond = game.cyanSigilPowerPerSecond.pow(2)
-    document.getElementById("cyanSigilPower").textContent = format(game.cyanSigilPower, 2)
-    document.getElementById("cyanSigilPowerPerSecond").textContent = format(game.cyanSigilPowerPerSecond, 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextCyanSigil: nextCyanSigilText,
+        cyanSigils: format(game.cyanSigils, 0),
+        cyanSigilsToGet: format(game.cyanSigilsToGet, 0),
+        cyanSigilEffect: format(game.cyanSigils.add(1).pow(2), 0),
+        cyanSigilPower: format(game.cyanSigilPower, 2),
+        cyanSigilPowerPerSecond: format(game.cyanSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(7, format(game.cyanSigils, 0))
+    } else {
+      document.getElementById("nextCyanSigil").textContent = nextCyanSigilText
+      document.getElementById("cyanSigils").textContent = format(game.cyanSigils, 0)
+      document.getElementById("cyanSigilsToGet").textContent = format(game.cyanSigilsToGet, 0)
+      document.getElementsByClassName("resourceText")[7].textContent = format(game.cyanSigils, 0)
+      document.getElementById("cyanSigilEffect").textContent = format(game.cyanSigils.add(1).pow(2), 0)
+      document.getElementById("cyanSigilPower").textContent = format(game.cyanSigilPower, 2)
+      document.getElementById("cyanSigilPowerPerSecond").textContent = format(game.cyanSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 11) {
     game.blueSigilsToGet = game.gold.add(1).log10().div(8000).floor()
-    document.getElementById("nextBlueSigil").textContent = format(new Decimal(10).pow(game.blueSigilsToGet.add(1).mul(8000)), 0)
+    const nextBlueSigilText = format(new Decimal(10).pow(game.blueSigilsToGet.add(1).mul(8000)), 0)
     if (game.darkMagicUpgradesBought[8] == true) game.blueSigilsToGet = game.blueSigilsToGet.mul(3)
     game.blueSigilsToGet = game.blueSigilsToGet.mul(new Decimal(5).pow(game.dragonPets ** 0.5))
     if (game.unlocks >= 15) game.blueSigilsToGet = game.blueSigilsToGet.mul(game.highestKnowledge.div(3).pow(0.7).add(1))
     if (game.unlocks >= 18) game.blueSigilsToGet = game.blueSigilsToGet.mul(game.blood.pow(2).add(1))
     if (game.plutoniumUpgradesBought[2] > 0) game.blueSigilsToGet = game.blueSigilsToGet.mul(game.plutonium.add(1).pow(0.5).mul(10).pow(game.plutoniumUpgradesBought[2]))
     game.blueSigilsToGet = game.blueSigilsToGet.round()
-    document.getElementById("blueSigils").textContent = format(game.blueSigils, 0)
-    document.getElementById("blueSigilsToGet").textContent = format(game.blueSigilsToGet, 0)
-    document.getElementsByClassName("resourceText")[8].textContent = format(game.blueSigils, 0)
-    document.getElementById("blueSigilEffect").textContent = format(game.blueSigils.add(1).pow(3), 0)
     game.blueSigilPowerPerSecond = game.blueSigils.pow(2).div(100).mul(game.blueSigilUpgradesBought[0].add(1))
     if (game.unlocks >= 13) game.blueSigilPowerPerSecond = game.blueSigilPowerPerSecond.pow(new Decimal(1.3).pow(game.violetSigilUpgradesBought[1].pow(0.5)))
-    document.getElementById("blueSigilPower").textContent = format(game.blueSigilPower, 2)
-    document.getElementById("blueSigilPowerPerSecond").textContent = format(game.blueSigilPowerPerSecond, 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextBlueSigil: nextBlueSigilText,
+        blueSigils: format(game.blueSigils, 0),
+        blueSigilsToGet: format(game.blueSigilsToGet, 0),
+        blueSigilEffect: format(game.blueSigils.add(1).pow(3), 0),
+        blueSigilPower: format(game.blueSigilPower, 2),
+        blueSigilPowerPerSecond: format(game.blueSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(8, format(game.blueSigils, 0))
+    } else {
+      document.getElementById("nextBlueSigil").textContent = nextBlueSigilText
+      document.getElementById("blueSigils").textContent = format(game.blueSigils, 0)
+      document.getElementById("blueSigilsToGet").textContent = format(game.blueSigilsToGet, 0)
+      document.getElementsByClassName("resourceText")[8].textContent = format(game.blueSigils, 0)
+      document.getElementById("blueSigilEffect").textContent = format(game.blueSigils.add(1).pow(3), 0)
+      document.getElementById("blueSigilPower").textContent = format(game.blueSigilPower, 2)
+      document.getElementById("blueSigilPowerPerSecond").textContent = format(game.blueSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 12) {
     game.indigoSigilsToGet = game.gold.add(1).log10().div(16000).floor()
-    document.getElementById("nextIndigoSigil").textContent = format(new Decimal(10).pow(game.indigoSigilsToGet.add(1).mul(16000)), 0)
+    const nextIndigoSigilText = format(new Decimal(10).pow(game.indigoSigilsToGet.add(1).mul(16000)), 0)
     game.indigoSigilsToGet = game.indigoSigilsToGet.mul(new Decimal(5).pow(game.dragonPets ** 0.5))
     if (game.unlocks >= 15) game.indigoSigilsToGet = game.indigoSigilsToGet.mul(game.highestKnowledge.div(3).pow(0.7).add(1))
     if (game.unlocks >= 18) game.indigoSigilsToGet = game.indigoSigilsToGet.mul(game.blood.pow(2).add(1))
     if (game.plutoniumUpgradesBought[2] > 0) game.indigoSigilsToGet = game.indigoSigilsToGet.mul(game.plutonium.add(1).pow(0.5).mul(10).pow(game.plutoniumUpgradesBought[2]))
     game.indigoSigilsToGet = game.indigoSigilsToGet.round()
-    document.getElementById("indigoSigils").textContent = format(game.indigoSigils, 0)
-    document.getElementsByClassName("resourceText")[9].textContent = format(game.indigoSigils, 0)
-    document.getElementById("indigoSigilEffect").textContent = format(game.indigoSigils.add(1).pow(4), 0)
-    document.getElementById("indigoSigilsToGet").textContent = format(game.indigoSigilsToGet, 0)
     game.indigoSigilPowerPerSecond = game.indigoSigils.pow(2).div(100).mul(game.indigoSigilUpgradesBought[0].add(1))
     if (game.tomeUpgradesBought[0]) game.indigoSigilPowerPerSecond = game.indigoSigilPowerPerSecond.pow(1.3)
-    document.getElementById("indigoSigilPower").textContent = format(game.indigoSigilPower, 2)
-    document.getElementById("indigoSigilPowerPerSecond").textContent = format(game.indigoSigilPowerPerSecond, 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextIndigoSigil: nextIndigoSigilText,
+        indigoSigils: format(game.indigoSigils, 0),
+        indigoSigilEffect: format(game.indigoSigils.add(1).pow(4), 0),
+        indigoSigilsToGet: format(game.indigoSigilsToGet, 0),
+        indigoSigilPower: format(game.indigoSigilPower, 2),
+        indigoSigilPowerPerSecond: format(game.indigoSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(9, format(game.indigoSigils, 0))
+    } else {
+      document.getElementById("nextIndigoSigil").textContent = nextIndigoSigilText
+      document.getElementById("indigoSigils").textContent = format(game.indigoSigils, 0)
+      document.getElementsByClassName("resourceText")[9].textContent = format(game.indigoSigils, 0)
+      document.getElementById("indigoSigilEffect").textContent = format(game.indigoSigils.add(1).pow(4), 0)
+      document.getElementById("indigoSigilsToGet").textContent = format(game.indigoSigilsToGet, 0)
+      document.getElementById("indigoSigilPower").textContent = format(game.indigoSigilPower, 2)
+      document.getElementById("indigoSigilPowerPerSecond").textContent = format(game.indigoSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 13) {
     game.violetSigilsToGet = game.gold.add(1).log10().div(30000).floor()
-    document.getElementById("nextVioletSigil").textContent = format(new Decimal(10).pow(game.violetSigilsToGet.add(1).mul(30000)), 0)
+    const nextVioletSigilText = format(new Decimal(10).pow(game.violetSigilsToGet.add(1).mul(30000)), 0)
     game.violetSigilsToGet = game.violetSigilsToGet.mul(new Decimal(5).pow(game.dragonPets ** 0.5))
     if (game.unlocks >= 15) game.violetSigilsToGet = game.violetSigilsToGet.mul(game.highestKnowledge.div(3).pow(0.7).add(1))
     if (game.unlocks >= 18) game.violetSigilsToGet = game.violetSigilsToGet.mul(game.blood.pow(2).add(1))
     if (game.plutoniumUpgradesBought[2] > 0) game.violetSigilsToGet = game.violetSigilsToGet.mul(game.plutonium.add(1).pow(0.5).mul(10).pow(game.plutoniumUpgradesBought[2]))
     game.violetSigilsToGet = game.violetSigilsToGet.round()
-    document.getElementById("violetSigils").textContent = format(game.violetSigils, 0)
-    document.getElementsByClassName("resourceText")[10].textContent = format(game.violetSigils, 0)
-    document.getElementById("violetSigilEffect").textContent = format(game.violetSigils.add(1).pow(5), 0)
-    document.getElementById("violetSigilsToGet").textContent = format(game.violetSigilsToGet, 0)
     game.violetSigilPowerPerSecond = game.violetSigils.pow(2).div(100).mul(game.violetSigilUpgradesBought[0].add(1))
-    document.getElementById("violetSigilPower").textContent = format(game.violetSigilPower, 2)
-    document.getElementById("violetSigilPowerPerSecond").textContent = format(game.violetSigilPowerPerSecond, 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextVioletSigil: nextVioletSigilText,
+        violetSigils: format(game.violetSigils, 0),
+        violetSigilEffect: format(game.violetSigils.add(1).pow(5), 0),
+        violetSigilsToGet: format(game.violetSigilsToGet, 0),
+        violetSigilPower: format(game.violetSigilPower, 2),
+        violetSigilPowerPerSecond: format(game.violetSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(10, format(game.violetSigils, 0))
+    } else {
+      document.getElementById("nextVioletSigil").textContent = nextVioletSigilText
+      document.getElementById("violetSigils").textContent = format(game.violetSigils, 0)
+      document.getElementsByClassName("resourceText")[10].textContent = format(game.violetSigils, 0)
+      document.getElementById("violetSigilEffect").textContent = format(game.violetSigils.add(1).pow(5), 0)
+      document.getElementById("violetSigilsToGet").textContent = format(game.violetSigilsToGet, 0)
+      document.getElementById("violetSigilPower").textContent = format(game.violetSigilPower, 2)
+      document.getElementById("violetSigilPowerPerSecond").textContent = format(game.violetSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 14) {
     game.pinkSigilsToGet = game.gold.add(1).log10().div(300000).floor()
-    document.getElementById("nextPinkSigil").textContent = format(new Decimal(10).pow(game.pinkSigilsToGet.add(1).mul(300000)), 0)
+    const nextPinkSigilText = format(new Decimal(10).pow(game.pinkSigilsToGet.add(1).mul(300000)), 0)
     game.pinkSigilsToGet = game.pinkSigilsToGet.mul(new Decimal(5).pow(game.dragonPets ** 0.5))
     if (game.unlocks >= 15) game.pinkSigilsToGet = game.pinkSigilsToGet.mul(game.highestKnowledge.div(3).pow(0.7).add(1))
     if (game.unlocks >= 18) game.pinkSigilsToGet = game.pinkSigilsToGet.mul(game.blood.pow(2).add(1))
@@ -1748,33 +1942,69 @@ function updateAdvancedResources() {
     if (game.holyTetrahedronUpgradesBought[8]) game.pinkSigilsToGet = game.pinkSigilsToGet.pow(2)
 		if (game.unlocks >= 33) game.pinkSigilsToGet = game.pinkSigilsToGet.pow(new Decimal(1.1).pow(game.lightEssenceUpgradesBought[2].pow(0.5)))
     game.pinkSigilsToGet = game.pinkSigilsToGet.round()
-    document.getElementById("pinkSigils").textContent = format(game.pinkSigils, 0)
-    document.getElementsByClassName("resourceText")[11].textContent = format(game.pinkSigils, 0)
-    document.getElementById("pinkSigilEffect").textContent = format(game.pinkSigils.add(1).pow(6), 0)
-    document.getElementById("pinkSigilsToGet").textContent = format(game.pinkSigilsToGet, 0)
     game.pinkSigilPowerPerSecond = game.pinkSigils.pow(2).div(100).mul(game.pinkSigilUpgradesBought[0].add(1))
     if (game.tomeUpgradesBought[1]) game.pinkSigilPowerPerSecond = game.pinkSigilPowerPerSecond.mul(game.totalTomes.pow(0.5).mul(3).add(1))
-    document.getElementById("pinkSigilPower").textContent = format(game.pinkSigilPower, 2)
-    document.getElementById("pinkSigilPowerPerSecond").textContent = format(game.pinkSigilPowerPerSecond, 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextPinkSigil: nextPinkSigilText,
+        pinkSigils: format(game.pinkSigils, 0),
+        pinkSigilEffect: format(game.pinkSigils.add(1).pow(6), 0),
+        pinkSigilsToGet: format(game.pinkSigilsToGet, 0),
+        pinkSigilPower: format(game.pinkSigilPower, 2),
+        pinkSigilPowerPerSecond: format(game.pinkSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(11, format(game.pinkSigils, 0))
+    } else {
+      document.getElementById("nextPinkSigil").textContent = nextPinkSigilText
+      document.getElementById("pinkSigils").textContent = format(game.pinkSigils, 0)
+      document.getElementsByClassName("resourceText")[11].textContent = format(game.pinkSigils, 0)
+      document.getElementById("pinkSigilEffect").textContent = format(game.pinkSigils.add(1).pow(6), 0)
+      document.getElementById("pinkSigilsToGet").textContent = format(game.pinkSigilsToGet, 0)
+      document.getElementById("pinkSigilPower").textContent = format(game.pinkSigilPower, 2)
+      document.getElementById("pinkSigilPowerPerSecond").textContent = format(game.pinkSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 15) {
-    document.getElementById("knowledge").textContent = format(game.knowledge, 0)
-    document.getElementsByClassName("resourceText")[12].textContent = format(game.knowledge, 0)
-    document.getElementById("highestKnowledge").textContent = format(game.highestKnowledge, 0)
     game.knowledgeTradeLevelCap = Decimal.min(game.highestKnowledge.add(1).log2().mul(1.6).add(3).floor(), 9999)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        knowledge: format(game.knowledge, 0),
+        highestKnowledge: format(game.highestKnowledge, 0),
+        knowledgeSigilBoost: format(game.highestKnowledge.div(3).pow(0.7).add(1), 2)
+      })
+      window.ui.update.setResourceText(12, format(game.knowledge, 0))
+    } else {
+      document.getElementById("knowledge").textContent = format(game.knowledge, 0)
+      document.getElementsByClassName("resourceText")[12].textContent = format(game.knowledge, 0)
+      document.getElementById("highestKnowledge").textContent = format(game.highestKnowledge, 0)
+      document.getElementById("knowledgeSigilBoost").textContent = format(game.highestKnowledge.div(3).pow(0.7).add(1), 2)
+    }
+
     if (game.knowledgeTradeLevelCap.lt(1e308)) {
       document.getElementById("knowledgeLevelRange").max = game.knowledgeTradeLevelCap.mag
       document.getElementById("knowledgeLevelInput").max = game.knowledgeTradeLevelCap.mag
     }
-    document.getElementById("knowledgeSigilBoost").textContent = format(game.highestKnowledge.div(3).pow(0.7).add(1), 2)
   }
   if (game.unlocks >= 16) {
-    document.getElementById("tomes").textContent = format(game.tomes, 0)
-    document.getElementsByClassName("resourceText")[13].textContent = format(game.tomes, 0)
-    document.getElementById("totalTomes").textContent = format(game.totalTomes, 0)
-    document.getElementById("tomeUpgrade2Effect").textContent = format(game.totalTomes.pow(0.5).mul(5).add(1), 2)
-    document.getElementById("tomeUpgrade7Effect").textContent = format(game.totalTomes.pow(1.2).add(1), 2)
-    document.getElementById("tomeUpgrade10Effect").textContent = format(game.totalTomes.pow(0.6), 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        tomes: format(game.tomes, 0),
+        totalTomes: format(game.totalTomes, 0),
+        tomeUpgrade2Effect: format(game.totalTomes.pow(0.5).mul(5).add(1), 2),
+        tomeUpgrade7Effect: format(game.totalTomes.pow(1.2).add(1), 2),
+        tomeUpgrade10Effect: format(game.totalTomes.pow(0.6), 2)
+      })
+      window.ui.update.setResourceText(13, format(game.tomes, 0))
+    } else {
+      document.getElementById("tomes").textContent = format(game.tomes, 0)
+      document.getElementsByClassName("resourceText")[13].textContent = format(game.tomes, 0)
+      document.getElementById("totalTomes").textContent = format(game.totalTomes, 0)
+      document.getElementById("tomeUpgrade2Effect").textContent = format(game.totalTomes.pow(0.5).mul(5).add(1), 2)
+      document.getElementById("tomeUpgrade7Effect").textContent = format(game.totalTomes.pow(1.2).add(1), 2)
+      document.getElementById("tomeUpgrade10Effect").textContent = format(game.totalTomes.pow(0.6), 2)
+    }
   }
   if (game.unlocks >= 17) {
     game.blueFirePerSecond = game.fire.add(1).log10().div(10000)
@@ -1792,9 +2022,17 @@ function updateAdvancedResources() {
 		if (game.unlocks >= 29) game.blueFirePerSecond = game.blueFirePerSecond.pow(game.planetEffect)
 		if (game.unlocks >= 31) game.blueFirePerSecond = game.blueFirePerSecond.pow(game.plagueUpgradesBought[2].pow(0.5).mul(10).add(1))
 		if (game.unlocks >= 32) game.blueFirePerSecond = game.blueFirePerSecond.pow(game.oganesson.log10().div(10).add(1).pow(game.oganessonUpgradesBought[4]))
-    document.getElementById("blueFire").textContent = format(game.blueFire, 0)
-    document.getElementById("blueFirePerSecond").textContent = format(game.blueFirePerSecond, 0)
-    document.getElementsByClassName("resourceText")[14].textContent = format(game.blueFire, 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        blueFire: format(game.blueFire, 0),
+        blueFirePerSecond: format(game.blueFirePerSecond, 0)
+      })
+      window.ui.update.setResourceText(14, format(game.blueFire, 0))
+    } else {
+      document.getElementById("blueFire").textContent = format(game.blueFire, 0)
+      document.getElementById("blueFirePerSecond").textContent = format(game.blueFirePerSecond, 0)
+      document.getElementsByClassName("resourceText")[14].textContent = format(game.blueFire, 0)
+    }
     //Enables/disables blue fire upgrade buttons based on whether the user's blue fire is higher than the cost
     for (i=0;i<6;i++) {
       if (game.blueFire.gte(game.blueFireUpgradeCosts[i])) {document.getElementsByClassName("blueFireUpgrade")[i].disabled = false}
@@ -1808,11 +2046,21 @@ function updateAdvancedResources() {
     document.getElementById("blueFireUpgrade6Effect").textContent = format(new Decimal(1000).pow(game.blueFireUpgradesBought[5].pow(0.6)), 2)
   }
   if (game.unlocks >= 18) {
-    document.getElementById("blood").textContent = format(game.blood, 0)
-    document.getElementById("bloodEffect").textContent = format(game.blood.pow(2).add(1), 0)
-    document.getElementById("bloodPerSecond").textContent = format(game.bloodPerSecond, 0)
-    document.getElementsByClassName("resourceText")[15].textContent = format(game.blood, 0)
-    document.getElementById("tomeUpgrade11Effect").textContent = format(game.blood.add(1).log10().add(1), 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        blood: format(game.blood, 0),
+        bloodEffect: format(game.blood.pow(2).add(1), 0),
+        bloodPerSecond: format(game.bloodPerSecond, 0),
+        tomeUpgrade11Effect: format(game.blood.add(1).log10().add(1), 2)
+      })
+      window.ui.update.setResourceText(15, format(game.blood, 0))
+    } else {
+      document.getElementById("blood").textContent = format(game.blood, 0)
+      document.getElementById("bloodEffect").textContent = format(game.blood.pow(2).add(1), 0)
+      document.getElementById("bloodPerSecond").textContent = format(game.bloodPerSecond, 0)
+      document.getElementsByClassName("resourceText")[15].textContent = format(game.blood, 0)
+      document.getElementById("tomeUpgrade11Effect").textContent = format(game.blood.add(1).log10().add(1), 2)
+    }
 		if (game.voidMagicUpgradesBought[6]) {game.bloodPerSecond = game.gold.add(1).log10()}
 		else {
 			if (game.inHell) { //Can definitely be made better using a switch
@@ -1834,16 +2082,26 @@ function updateAdvancedResources() {
 		}
   }
   if (game.unlocks >= 19) {
-    document.getElementById("darkMagicUpgrade11Effect").textContent = format(game.blood.add(1), 2)
-    document.getElementById("darkMagicUpgrade12Effect").textContent = format(game.blood.add(1).log10().div(1.5).add(1), 2)
-    document.getElementById("darkMagicUpgrade14Effect").textContent = format(game.plutonium.add(1).log2().add(1), 2)
-    document.getElementById("darkMagicUpgrade16Effect").textContent = format(game.blueFire.add(1).log10().div(10).add(1), 2)
-    document.getElementById("darkMagicUpgrade17Effect").textContent = format(game.blood.add(1).log10().div(2).add(1), 2)
-    document.getElementById("darkMagicUpgrade18Effect").textContent = format(game.plutonium.add(1).log10().add(1), 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        darkMagicUpgrade11Effect: format(game.blood.add(1), 2),
+        darkMagicUpgrade12Effect: format(game.blood.add(1).log10().div(1.5).add(1), 2),
+        darkMagicUpgrade14Effect: format(game.plutonium.add(1).log2().add(1), 2),
+        darkMagicUpgrade16Effect: format(game.blueFire.add(1).log10().div(10).add(1), 2),
+        darkMagicUpgrade17Effect: format(game.blood.add(1).log10().div(2).add(1), 2),
+        darkMagicUpgrade18Effect: format(game.plutonium.add(1).log10().add(1), 2)
+      })
+    } else {
+      document.getElementById("darkMagicUpgrade11Effect").textContent = format(game.blood.add(1), 2)
+      document.getElementById("darkMagicUpgrade12Effect").textContent = format(game.blood.add(1).log10().div(1.5).add(1), 2)
+      document.getElementById("darkMagicUpgrade14Effect").textContent = format(game.plutonium.add(1).log2().add(1), 2)
+      document.getElementById("darkMagicUpgrade16Effect").textContent = format(game.blueFire.add(1).log10().div(10).add(1), 2)
+      document.getElementById("darkMagicUpgrade17Effect").textContent = format(game.blood.add(1).log10().div(2).add(1), 2)
+      document.getElementById("darkMagicUpgrade18Effect").textContent = format(game.plutonium.add(1).log10().add(1), 2)
+    }
   }
   if (game.unlocks >= 20) {
-    document.getElementById("plutonium").textContent = format(game.plutonium, 0)
-    document.getElementsByClassName("resourceText")[16].textContent = format(game.plutonium, 0)
+    const plutoniumText = format(game.plutonium, 0)
     game.plutoniumToGet = game.uranium.add(1).log10().div(1e13).mul(1 + 0.05 * game.plutoniumUpgradesBought[0])
     if (game.darkMagicUpgradesBought[14]) game.plutoniumToGet = game.plutoniumToGet.mul(10)
     if (game.darkMagicUpgradesBought[18]) game.plutoniumToGet = game.plutoniumToGet.pow(2)
@@ -1852,15 +2110,29 @@ function updateAdvancedResources() {
 		if (game.unlocks >= 32) game.plutoniumToGet = game.plutoniumToGet.pow(game.oganessonUpgradesBought[0] / 50 + 1)
 		if (game.unlocks >= 36) game.plutoniumToGet = game.plutoniumToGet.pow(new Decimal(1.2).pow(game.finalityEssenceUpgradesBought[2].pow(0.5)))
     game.plutoniumToGet = game.plutoniumToGet.floor()
-    document.getElementById("plutoniumToGet").textContent = format(game.plutoniumToGet, 0)
     if (game.plutoniumToGet.gt(game.bestPlutoniumToGet)) game.bestPlutoniumToGet = game.plutoniumToGet
-    document.getElementById("extraPlutoniumPerSecond").textContent = format(Decimal.max(game.bestPlutoniumToGet.div(10), 0), 0)
-    document.getElementById("plutoniumUpgrade2Effect").textContent = format((game.plutoniumUpgradesBought[1] * 100000) ** 0.8 + 1, 2)
-    document.getElementById("plutoniumUpgrade3Effect").textContent = format(game.plutonium.add(1).pow(0.5).mul(10).pow(game.plutoniumUpgradesBought[2]), 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        plutonium: plutoniumText,
+        plutoniumToGet: format(game.plutoniumToGet, 0),
+        extraPlutoniumPerSecond: format(Decimal.max(game.bestPlutoniumToGet.div(10), 0), 0),
+        plutoniumUpgrade2Effect: format((game.plutoniumUpgradesBought[1] * 100000) ** 0.8 + 1, 2),
+        plutoniumUpgrade3Effect: format(game.plutonium.add(1).pow(0.5).mul(10).pow(game.plutoniumUpgradesBought[2]), 2)
+      })
+      window.ui.update.setResourceText(16, plutoniumText)
+    } else {
+      document.getElementById("plutonium").textContent = plutoniumText
+      document.getElementsByClassName("resourceText")[16].textContent = plutoniumText
+      document.getElementById("plutoniumToGet").textContent = format(game.plutoniumToGet, 0)
+      document.getElementById("extraPlutoniumPerSecond").textContent = format(Decimal.max(game.bestPlutoniumToGet.div(10), 0), 0)
+      document.getElementById("plutoniumUpgrade2Effect").textContent = format((game.plutoniumUpgradesBought[1] * 100000) ** 0.8 + 1, 2)
+      document.getElementById("plutoniumUpgrade3Effect").textContent = format(game.plutonium.add(1).pow(0.5).mul(10).pow(game.plutoniumUpgradesBought[2]), 2)
+    }
   }
   if (game.unlocks >= 21) {
     game.redSigilsToGet = Decimal.max(game.gold.add(10).log10().log10().sub(20).floor(), 0)
-    document.getElementById("nextRedSigil").textContent = format(new Decimal(10).pow(new Decimal(10).pow(game.redSigilsToGet.add(21))), 0)
+    const nextRedSigilText = format(new Decimal(10).pow(new Decimal(10).pow(game.redSigilsToGet.add(21))), 0)
     if (game.darkMagicUpgradesBought[15]) game.redSigilsToGet = game.redSigilsToGet.mul(game.blueFire.add(1).log10().div(10).add(1))
     if (game.unlocks >= 22) game.redSigilsToGet = game.redSigilsToGet.mul(game.orangeSigilUpgradesBought[1].pow(0.5).mul(2).add(1))
     if (game.holyTetrahedronUpgradesBought[3]) game.redSigilsToGet = game.redSigilsToGet.mul(10)
@@ -1868,48 +2140,90 @@ function updateAdvancedResources() {
     if (game.holyDodecahedronUpgradesBought[0]) game.redSigilsToGet = game.redSigilsToGet.mul(game.holyOctahedrons.add(1))
     if (game.holyDodecahedronUpgradesBought[3]) game.redSigilsToGet = game.redSigilsToGet.mul(1e20)
     game.redSigilsToGet = game.redSigilsToGet.round()
-    document.getElementById("redSigils").textContent = format(game.redSigils, 0)
-    document.getElementsByClassName("resourceText")[17].textContent = format(game.redSigils, 0)
-    document.getElementById("redSigilEffect").textContent = format(new Decimal(10).pow(game.redSigils.pow(0.5).mul(400)), 0)
-    document.getElementById("redSigilsToGet").textContent = format(game.redSigilsToGet, 0)
     game.redSigilPowerPerSecond = game.redSigils.pow(2).div(100).mul(game.redSigilUpgradesBought[0].add(1))
-    document.getElementById("redSigilPower").textContent = format(game.redSigilPower, 2)
-    document.getElementById("redSigilPowerPerSecond").textContent = format(game.redSigilPowerPerSecond, 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextRedSigil: nextRedSigilText,
+        redSigils: format(game.redSigils, 0),
+        redSigilEffect: format(new Decimal(10).pow(game.redSigils.pow(0.5).mul(400)), 0),
+        redSigilsToGet: format(game.redSigilsToGet, 0),
+        redSigilPower: format(game.redSigilPower, 2),
+        redSigilPowerPerSecond: format(game.redSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(17, format(game.redSigils, 0))
+    } else {
+      document.getElementById("nextRedSigil").textContent = nextRedSigilText
+      document.getElementById("redSigils").textContent = format(game.redSigils, 0)
+      document.getElementsByClassName("resourceText")[17].textContent = format(game.redSigils, 0)
+      document.getElementById("redSigilEffect").textContent = format(new Decimal(10).pow(game.redSigils.pow(0.5).mul(400)), 0)
+      document.getElementById("redSigilsToGet").textContent = format(game.redSigilsToGet, 0)
+      document.getElementById("redSigilPower").textContent = format(game.redSigilPower, 2)
+      document.getElementById("redSigilPowerPerSecond").textContent = format(game.redSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 22) {
     game.orangeSigilsToGet = Decimal.max(game.gold.add(10).log10().log10().sub(21).div(2).floor(), 0)
-    document.getElementById("nextOrangeSigil").textContent = format(new Decimal(10).pow(new Decimal(10).pow(game.orangeSigilsToGet.mul(2).add(23))), 0)
+    const nextOrangeSigilText = format(new Decimal(10).pow(new Decimal(10).pow(game.orangeSigilsToGet.mul(2).add(23))), 0)
     if (game.darkMagicUpgradesBought[16]) game.orangeSigilsToGet = game.orangeSigilsToGet.mul(game.blood.add(1).log10().div(2).add(1))
     if (game.unlocks >= 23) game.orangeSigilsToGet = game.orangeSigilsToGet.mul(game.yellowSigilUpgradesBought[1].pow(0.5).mul(2).add(1))
     if (game.holyTetrahedronUpgradesBought[3]) game.orangeSigilsToGet = game.orangeSigilsToGet.mul(10)
     if (game.holyOctahedronUpgradesBought[0]) game.orangeSigilsToGet = game.orangeSigilsToGet.mul(game.holyTetrahedrons.add(1))
     if (game.holyDodecahedronUpgradesBought[0]) game.orangeSigilsToGet = game.orangeSigilsToGet.mul(game.holyOctahedrons.add(1))
     game.orangeSigilsToGet = game.orangeSigilsToGet.round()
-    document.getElementById("orangeSigils").textContent = format(game.orangeSigils, 0)
-    document.getElementsByClassName("resourceText")[18].textContent = format(game.orangeSigils, 0)
-    document.getElementById("orangeSigilEffect").textContent = format(new Decimal(10).pow(game.orangeSigils.pow(0.5).mul(800)), 0)
-    document.getElementById("orangeSigilsToGet").textContent = format(game.orangeSigilsToGet, 0)
     game.orangeSigilPowerPerSecond = game.orangeSigils.pow(2).div(100).mul(game.orangeSigilUpgradesBought[0].add(1))
     if (game.voidMagicUpgradesBought[1]) game.orangeSigilPowerPerSecond = game.orangeSigilPowerPerSecond.mul(1e20)
-    document.getElementById("orangeSigilPower").textContent = format(game.orangeSigilPower, 2)
-    document.getElementById("orangeSigilPowerPerSecond").textContent = format(game.orangeSigilPowerPerSecond, 2)
+
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextOrangeSigil: nextOrangeSigilText,
+        orangeSigils: format(game.orangeSigils, 0),
+        orangeSigilEffect: format(new Decimal(10).pow(game.orangeSigils.pow(0.5).mul(800)), 0),
+        orangeSigilsToGet: format(game.orangeSigilsToGet, 0),
+        orangeSigilPower: format(game.orangeSigilPower, 2),
+        orangeSigilPowerPerSecond: format(game.orangeSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(18, format(game.orangeSigils, 0))
+    } else {
+      document.getElementById("nextOrangeSigil").textContent = nextOrangeSigilText
+      document.getElementById("orangeSigils").textContent = format(game.orangeSigils, 0)
+      document.getElementsByClassName("resourceText")[18].textContent = format(game.orangeSigils, 0)
+      document.getElementById("orangeSigilEffect").textContent = format(new Decimal(10).pow(game.orangeSigils.pow(0.5).mul(800)), 0)
+      document.getElementById("orangeSigilsToGet").textContent = format(game.orangeSigilsToGet, 0)
+      document.getElementById("orangeSigilPower").textContent = format(game.orangeSigilPower, 2)
+      document.getElementById("orangeSigilPowerPerSecond").textContent = format(game.orangeSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 23) {
     game.yellowSigilsToGet = Decimal.max(game.gold.add(10).log10().log10().sub(22).div(3).floor(), 0)
-    document.getElementById("nextYellowSigil").textContent = format(new Decimal(10).pow(new Decimal(10).pow(game.yellowSigilsToGet.mul(3).add(25))), 0)
+    const nextYellowSigilText = format(new Decimal(10).pow(new Decimal(10).pow(game.yellowSigilsToGet.mul(3).add(25))), 0)
     if (game.darkMagicUpgradesBought[17]) game.yellowSigilsToGet = game.yellowSigilsToGet.mul(game.plutonium.add(1).log10().add(1))
     if (game.holyTetrahedronUpgradesBought[3]) game.yellowSigilsToGet = game.yellowSigilsToGet.mul(10)
     if (game.holyOctahedronUpgradesBought[0]) game.yellowSigilsToGet = game.yellowSigilsToGet.mul(game.holyTetrahedrons.add(1))
     if (game.holyDodecahedronUpgradesBought[0]) game.yellowSigilsToGet = game.yellowSigilsToGet.mul(game.holyOctahedrons.add(1))
     game.yellowSigilsToGet = game.yellowSigilsToGet.round()
-    document.getElementById("yellowSigils").textContent = format(game.yellowSigils, 0)
-    document.getElementsByClassName("resourceText")[19].textContent = format(game.yellowSigils, 0)
-    document.getElementById("yellowSigilEffect").textContent = format(new Decimal(10).pow(game.yellowSigils.pow(0.5).mul(1600)), 0)
-    document.getElementById("yellowSigilsToGet").textContent = format(game.yellowSigilsToGet, 0)
+    const yellowSigilsText = format(game.yellowSigils, 0)
     game.yellowSigilPowerPerSecond = game.yellowSigils.pow(2).div(100).mul(game.yellowSigilUpgradesBought[0].add(1))
     if (game.darkMagicUpgradesBought[19]) game.yellowSigilPowerPerSecond = game.yellowSigilPowerPerSecond.mul(1000)
-    document.getElementById("yellowSigilPower").textContent = format(game.yellowSigilPower, 2)
-    document.getElementById("yellowSigilPowerPerSecond").textContent = format(game.yellowSigilPowerPerSecond, 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        nextYellowSigil: nextYellowSigilText,
+        yellowSigils: yellowSigilsText,
+        yellowSigilEffect: format(new Decimal(10).pow(game.yellowSigils.pow(0.5).mul(1600)), 0),
+        yellowSigilsToGet: format(game.yellowSigilsToGet, 0),
+        yellowSigilPower: format(game.yellowSigilPower, 2),
+        yellowSigilPowerPerSecond: format(game.yellowSigilPowerPerSecond, 2)
+      })
+      window.ui.update.setResourceText(19, yellowSigilsText)
+    } else {
+      document.getElementById("nextYellowSigil").textContent = nextYellowSigilText
+      document.getElementById("yellowSigils").textContent = yellowSigilsText
+      document.getElementsByClassName("resourceText")[19].textContent = yellowSigilsText
+      document.getElementById("yellowSigilEffect").textContent = format(new Decimal(10).pow(game.yellowSigils.pow(0.5).mul(1600)), 0)
+      document.getElementById("yellowSigilsToGet").textContent = format(game.yellowSigilsToGet, 0)
+      document.getElementById("yellowSigilPower").textContent = format(game.yellowSigilPower, 2)
+      document.getElementById("yellowSigilPowerPerSecond").textContent = format(game.yellowSigilPowerPerSecond, 2)
+    }
   }
   if (game.unlocks >= 24) {
     game.holyTetrahedronsToGet = game.gold.add(1).log10().div(1e30).pow(0.05)
@@ -2245,8 +2559,14 @@ function updateLarge() {
   //Handles the platinum convert button cooldown
   if (game.platinumConvertCooldown > 0) {
     game.platinumConvertCooldown -= 0.5
-    document.getElementById("platinumConvertCooldown").textContent = format(game.platinumConvertCooldown, 0)
-    if (game.platinumConvertCooldown == 0) document.getElementById("platinumConvertButton").disabled = false
+    const cooldownText = format(game.platinumConvertCooldown, 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('platinumConvertCooldown', cooldownText)
+      if (game.platinumConvertCooldown == 0) window.ui.update.setDisabled('platinumConvertButton', false)
+    } else {
+      document.getElementById("platinumConvertCooldown").textContent = cooldownText
+      if (game.platinumConvertCooldown == 0) document.getElementById("platinumConvertButton").disabled = false
+    }
   }
   if (game.platinumUpgradesBought[4] == 1) game.platinum = game.platinum.add(game.platinumToGet.div(timeDivider))
   if (game.unlocks >= 3) game.platinum = game.platinum.add(Decimal.max(game.bestPlatinumToGet.div(20), 2))
@@ -2254,16 +2574,28 @@ function updateLarge() {
   //Handles the uranium convert button cooldown
   if (game.uraniumConvertCooldown > 0) {
     game.uraniumConvertCooldown -= 0.5
-    document.getElementById("uraniumConvertCooldown").textContent = format(game.uraniumConvertCooldown, 0)
-    if (game.uraniumConvertCooldown == 0) document.getElementById("uraniumConvertButton").disabled = false
+    const cooldownText = format(game.uraniumConvertCooldown, 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('uraniumConvertCooldown', cooldownText)
+      if (game.uraniumConvertCooldown == 0) window.ui.update.setDisabled('uraniumConvertButton', false)
+    } else {
+      document.getElementById("uraniumConvertCooldown").textContent = cooldownText
+      if (game.uraniumConvertCooldown == 0) document.getElementById("uraniumConvertButton").disabled = false
+    }
   }
   if (game.unlocks >= 7) game.uranium = game.uranium.add(Decimal.max(game.bestUraniumToGet.div(20), 1))
   
   //Handles the dragon time spending cooldown
   if (game.dragonTimeCooldown > 0) {
     game.dragonTimeCooldown -= 0.5
-    document.getElementById("dragonTimeCooldown").textContent = format(game.dragonTimeCooldown, 0)
-    if (game.dragonTimeCooldown == 0) document.getElementById("dragonSpendTimeButton").disabled = false
+    const cooldownText = format(game.dragonTimeCooldown, 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('dragonTimeCooldown', cooldownText)
+      if (game.dragonTimeCooldown == 0) window.ui.update.setDisabled('dragonSpendTimeButton', false)
+    } else {
+      document.getElementById("dragonTimeCooldown").textContent = cooldownText
+      if (game.dragonTimeCooldown == 0) document.getElementById("dragonSpendTimeButton").disabled = false
+    }
   }
   if (game.unlockedAchievements[6] > 0) {
     dragonSpendTime()
@@ -2275,8 +2607,14 @@ function updateLarge() {
   //Handles the plutonium convert button cooldown
   if (game.plutoniumConvertCooldown > 0) {
     game.plutoniumConvertCooldown -= 0.5
-    document.getElementById("plutoniumConvertCooldown").textContent = format(game.plutoniumConvertCooldown, 0)
-    if (game.plutoniumConvertCooldown == 0) document.getElementById("plutoniumConvertButton").disabled = false
+    const cooldownText = format(game.plutoniumConvertCooldown, 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('plutoniumConvertCooldown', cooldownText)
+      if (game.plutoniumConvertCooldown == 0) window.ui.update.setDisabled('plutoniumConvertButton', false)
+    } else {
+      document.getElementById("plutoniumConvertCooldown").textContent = cooldownText
+      if (game.plutoniumConvertCooldown == 0) document.getElementById("plutoniumConvertButton").disabled = false
+    }
   }
   if (game.unlocks >= 20) game.plutonium = game.plutonium.add(Decimal.max(game.bestPlutoniumToGet.div(20), 0))
   
@@ -2286,9 +2624,13 @@ function updateLarge() {
   if (game.tomeUpgradesBought[8] == true) magicHardcap = magicHardcap.pow(game.blueFireUpgradesBought[3].pow(0.7).mul(5).add(1))
   if (game.magic.gt(magicHardcap)) {
     game.magic = magicHardcap
-    document.getElementById("magicCap").textContent = " (hardcapped)"
+    if (window.ui && window.ui.update) window.ui.update.setText('magicCap', ' (hardcapped)')
+    else document.getElementById("magicCap").textContent = " (hardcapped)"
   }
-  else {document.getElementById("magicCap").textContent = ""}
+  else {
+    if (window.ui && window.ui.update) window.ui.update.setText('magicCap', '')
+    else document.getElementById("magicCap").textContent = ""
+  }
   if (game.unlocks >= 10) game.cyanSigilPower = game.cyanSigilPower.add(game.cyanSigilPowerPerSecond.div(timeDivider))
   if (game.unlocks >= 11) game.blueSigilPower = game.blueSigilPower.add(game.blueSigilPowerPerSecond.div(timeDivider))
   if (game.unlocks >= 12) game.indigoSigilPower = game.indigoSigilPower.add(game.indigoSigilPowerPerSecond.div(timeDivider))

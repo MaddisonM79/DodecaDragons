@@ -32,10 +32,32 @@
       disabledCache.set(key, !!disabled);
       el.disabled = !!disabled;
     },
+    setClassDisabled(className, index, disabled) {
+      const elements = document.getElementsByClassName(className);
+      if (!elements || !elements[index]) return;
+      const key = `.${className}[${index}]`;
+      if (disabledCache.get(key) === !!disabled) return;
+      disabledCache.set(key, !!disabled);
+      elements[index].disabled = !!disabled;
+    },
+    setResourceText(index, value) {
+      const rows = document.getElementsByClassName('resourceText');
+      if (!rows || !rows[index]) return;
+      const key = `.resourceText[${index}]`;
+      if (textCache.get(key) === value) return;
+      textCache.set(key, value);
+      rows[index].textContent = value;
+    },
     showResourceRow(index) {
       const rows = document.getElementsByClassName('resourceRow');
       if (!rows || !rows[index]) return;
       if (rows[index].style.display !== 'block') rows[index].style.display = 'block';
+    },
+    // Batch update multiple elements at once
+    batchSetText(updates) {
+      for (const [id, value] of Object.entries(updates)) {
+        this.setText(id, value);
+      }
     }
   };
 
