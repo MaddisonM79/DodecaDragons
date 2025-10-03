@@ -108,18 +108,32 @@ function buyKnowledgeUpgrade(x) {
     if (game.knowledgeUpgradeCosts[0].lt("e1e9")) game.knowledge = game.knowledge.sub(game.knowledgeUpgradeCosts[0])
     game.knowledgeUpgradesBought[0] = game.knowledgeUpgradesBought[0].add(1)
     game.knowledgeUpgradeCosts[0] = new Decimal(2).pow(game.knowledgeUpgradesBought[0]).mul(20).floor()
-    document.getElementById("knowledgeUpgrade1Cost").textContent = format(game.knowledgeUpgradeCosts[0], 0)
-    document.getElementById("knowledgeUpgrade1Effect").textContent = format(new Decimal(2).pow(game.knowledgeUpgradesBought[0].pow(0.5)), 2)
+    const cost1 = format(game.knowledgeUpgradeCosts[0], 0)
+    const effect1 = format(new Decimal(2).pow(game.knowledgeUpgradesBought[0].pow(0.5)), 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('knowledgeUpgrade1Cost', cost1)
+      window.ui.update.setText('knowledgeUpgrade1Effect', effect1)
+    } else {
+      document.getElementById("knowledgeUpgrade1Cost").textContent = cost1
+      document.getElementById("knowledgeUpgrade1Effect").textContent = effect1
+    }
   }
   else if (x==2 && game.knowledge.gte(game.knowledgeUpgradeCosts[1])) {
     if (game.knowledgeUpgradeCosts[1].lt("e1e9")) game.knowledge = game.knowledge.sub(game.knowledgeUpgradeCosts[1])
     game.knowledgeUpgradesBought[1] = game.knowledgeUpgradesBought[1].add(1)
     game.knowledgeUpgradeCosts[1] = new Decimal(5).pow(game.knowledgeUpgradesBought[1]).mul(50).floor()
-    document.getElementById("knowledgeUpgrade2Cost").textContent = format(game.knowledgeUpgradeCosts[1], 0)
     knowledgeUpgrade2Effect = new Decimal(5).pow(game.knowledgeUpgradesBought[1].pow(0.5))
     if (knowledgeUpgrade2Effect.gt(1e20)) knowledgeUpgrade2Effect = knowledgeUpgrade2Effect.mul(1e60).pow(0.25)
 		if (knowledgeUpgrade2Effect.gt("e2e7")) knowledgeUpgrade2Effect = new Decimal("e2e7")
-    document.getElementById("knowledgeUpgrade2Effect").textContent = format(knowledgeUpgrade2Effect, 2)
+    const cost2 = format(game.knowledgeUpgradeCosts[1], 0)
+    const effect2 = format(knowledgeUpgrade2Effect, 2)
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('knowledgeUpgrade2Cost', cost2)
+      window.ui.update.setText('knowledgeUpgrade2Effect', effect2)
+    } else {
+      document.getElementById("knowledgeUpgrade2Cost").textContent = cost2
+      document.getElementById("knowledgeUpgrade2Effect").textContent = effect2
+    }
   }
   else if (x==3 && game.knowledge.gte(100000)) {
     game.knowledge = game.knowledge.sub(100000)
