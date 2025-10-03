@@ -50,7 +50,7 @@ if (isDevVersion) {
   }
   refreshLoop()
 
-  setInterval(function() {document.getElementById("fps").textContent = fps + " fps"}, 200);
+  // REMOVED: setInterval(function() {document.getElementById("fps").textContent = fps + " fps"}, 200) - Now handled by unified game loop
 }
 
 //Formatting code taken from RedShark77's games
@@ -458,7 +458,7 @@ function save() {
 }
 
 function setAutoSave() {
-  setInterval(save, 5000);
+  // REMOVED: setInterval(save, 5000) - Now handled by unified game loop
   autosaveStarted = true;
 }
 setAutoSave()
@@ -2184,10 +2184,10 @@ function updateSmall() {
   //if (game.unlocks >= 13) game.violetSigilPower = game.violetSigilPower.add(game.violetSigilPowerPerSecond.mul(diff))
   //if (game.unlocks >= 14) game.pinkSigilPower = game.pinkSigilPower.add(game.pinkSigilPowerPerSecond.mul(diff))
   //if (game.unlockedAchievements[5] > 3) game.uranium = game.uranium.add(game.uraniumToGet.mul(diff))
-  //if (game.unlockedAchievements[0] > 8 && game.minerAutoBuyMax) buyMaxMiners()  
+  //if (game.unlockedAchievements[0] > 8 && game.minerAutoBuyMax) buyMaxMiners()
 }
 updateSmall()
-setInterval(updateSmall, 150)
+// REMOVED: setInterval(updateSmall, 150) - Now handled by unified game loop
 
 let timeSinceLastUpdate = Date.now()
 //Large update (occurs once per second)
@@ -2357,7 +2357,7 @@ function updateLarge() {
   }
 	timeSinceLastUpdate = Date.now()
 }
-setInterval(updateLarge, 500)
+// REMOVED: setInterval(updateLarge, 500) - Now handled by unified game loop
 
 function changeTab(x) {
   switch(x) {
@@ -2499,7 +2499,7 @@ function timePlayedUp() {
 	}
 }
 
-setInterval(timePlayedUp, 100)
+// REMOVED: setInterval(timePlayedUp, 100) - Now handled by unified game loop
 
 function getSaveErrorCode() {
   //error code will indicate 3 things: 

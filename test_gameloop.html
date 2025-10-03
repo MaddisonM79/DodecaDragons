@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Loop Test</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #222; color: #0f0; }
+    .metric { margin: 10px 0; }
+    .good { color: #0f0; }
+    .warn { color: #ff0; }
+    .bad { color: #f00; }
+    h1 { color: #0ff; }
+  </style>
+</head>
+<body>
+  <h1>DodecaDragons Game Loop Performance Test</h1>
+
+  <div class="metric">
+    <strong>Game Loop FPS:</strong> <span id="loopFps">-</span>
+  </div>
+  <div class="metric">
+    <strong>Update Small (150ms):</strong> <span id="smallCount">0</span> calls,
+    <span id="smallAvg">-</span> avg interval
+  </div>
+  <div class="metric">
+    <strong>Update Large (500ms):</strong> <span id="largeCount">0</span> calls,
+    <span id="largeAvg">-</span> avg interval
+  </div>
+  <div class="metric">
+    <strong>Render Auto (100ms):</strong> <span id="renderCount">0</span> calls,
+    <span id="renderAvg">-</span> avg interval
+  </div>
+  <div class="metric">
+    <strong>Save (5000ms):</strong> <span id="saveCount">0</span> calls,
+    <span id="saveAvg">-</span> avg interval
+  </div>
+  <div class="metric">
+    <strong>Status:</strong> <span id="status" class="good">Running...</span>
+  </div>
+
+  <button onclick="gameLoop.stop()">Stop Loop</button>
+  <button onclick="gameLoop.resume()">Resume Loop</button>
+  <button onclick="resetCounters()">Reset Counters</button>
+
+  <script>
+    // Mock game objects and functions
+    var isDevVersion = true;
+    var timeStopped = false;
+    var autosaveStarted = true;
+    var game = { lastUpdate: Date.now() };
+
+    // FPS tracking (similar to the actual game)
+    window.times = [];
+    window.fps = 0;
+
+    function trackFPS() {
+      window.requestAnimationFrame(() => {
+        const now = Date.now();
+        while (times.length > 0 && times[0] <= now - 1000) times.shift();
+        times.push(now);
+        fps = times.length;
+        trackFPS();
+      });
+    }
+    trackFPS();
+
+    // Test counters
+    var testMetrics = {
+      small: { count: 0, times: [], lastTime: 0 },
+      large: { count: 0, times: [], lastTime: 0 },
+      render: { count: 0, times: [], lastTime: 0 },
+      save: { count: 0, times: [], lastTime: 0 }
+    };
+
+    function updateSmall() {
+      var now = performance.now();
+      if (testMetrics.small.lastTime > 0) {
+        testMetrics.small.times.push(now - testMetrics.small.lastTime);
+        if (testMetrics.small.times.length > 100) testMetrics.small.times.shift();
+      }
+      testMetrics.small.lastTime = now;
+      testMetrics.small.count++;
+    }
+
+    function updateLarge() {
+      var now = performance.now();
+      if (testMetrics.large.lastTime > 0) {
+        testMetrics.large.times.push(now - testMetrics.large.lastTime);
+        if (testMetrics.large.times.length > 20) testMetrics.large.times.shift();
+      }
+      testMetrics.large.lastTime = now;
+      testMetrics.large.count++;
+    }
+
+    function renderAuto() {
+      var now = performance.now();
+      if (testMetrics.render.lastTime > 0) {
+        testMetrics.render.times.push(now - testMetrics.render.lastTime);
+        if (testMetrics.render.times.length > 100) testMetrics.render.times.shift();
+      }
+      testMetrics.render.lastTime = now;
+      testMetrics.render.count++;
+    }
+
+    function renderKeyboardPan() {
+      // No-op for test
+    }
+
+    function save() {
+      var now = performance.now();
+      if (testMetrics.save.lastTime > 0) {
+        testMetrics.save.times.push(now - testMetrics.save.lastTime);
+        if (testMetrics.save.times.length > 10) testMetrics.save.times.shift();
+      }
+      testMetrics.save.lastTime = now;
+      testMetrics.save.count++;
+    }
+
+    function timePlayedUp() {
+      // No-op for test
+    }
+
+    function getAverage(arr) {
+      if (arr.length === 0) return 0;
+      return arr.reduce((a,b) => a + b, 0) / arr.length;
+    }
+
+    function formatInterval(ms, expected) {
+      var diff = Math.abs(ms - expected);
+      var pct = (diff / expected) * 100;
+      var color = pct < 5 ? 'good' : (pct < 10 ? 'warn' : 'bad');
+      return '<span class="' + color + '">' + ms.toFixed(1) + 'ms (&plusmn;' + pct.toFixed(1) + '%)</span>';
+    }
+
+    function resetCounters() {
+      testMetrics = {
+        small: { count: 0, times: [], lastTime: 0 },
+        large: { count: 0, times: [], lastTime: 0 },
+        render: { count: 0, times: [], lastTime: 0 },
+        save: { count: 0, times: [], lastTime: 0 }
+      };
+    }
+
+    // Update display using requestAnimationFrame for smooth updates
+    var lastDisplayUpdate = 0;
+    function updateDisplay(timestamp) {
+      // Update display ~10 times per second
+      if (timestamp - lastDisplayUpdate >= 100) {
+        lastDisplayUpdate = timestamp;
+
+        document.getElementById('loopFps').textContent = fps + ' FPS';
+        document.getElementById('smallCount').textContent = testMetrics.small.count;
+        document.getElementById('largeCount').textContent = testMetrics.large.count;
+        document.getElementById('renderCount').textContent = testMetrics.render.count;
+        document.getElementById('saveCount').textContent = testMetrics.save.count;
+
+        document.getElementById('smallAvg').innerHTML = formatInterval(getAverage(testMetrics.small.times), 150);
+        document.getElementById('largeAvg').innerHTML = formatInterval(getAverage(testMetrics.large.times), 500);
+        document.getElementById('renderAvg').innerHTML = formatInterval(getAverage(testMetrics.render.times), 100);
+        document.getElementById('saveAvg').innerHTML = formatInterval(getAverage(testMetrics.save.times), 5000);
+
+        document.getElementById('status').textContent = gameLoop.running ? 'Running...' : 'Stopped';
+        document.getElementById('status').className = gameLoop.running ? 'good' : 'warn';
+      }
+
+      requestAnimationFrame(updateDisplay);
+    }
+    requestAnimationFrame(updateDisplay);
+  </script>
+
+  <script src="scripts/gameLoop.js"></script>
+  <script>
+    gameLoop.init();
+    console.log('Game loop initialized');
+    console.log('Watch the counters increment - they should update every frame!');
+  </script>
+</body>
+</html>

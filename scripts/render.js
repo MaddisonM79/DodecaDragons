@@ -272,7 +272,7 @@ function renderAuto() {
   //render(renderVars.posX, renderVars.posY)
   render(renderVars.posX + renderVars.diffX, renderVars.posY + renderVars.diffY)
 }
-setInterval(renderAuto, 100)
+// REMOVED: setInterval(renderAuto, 100) - Now handled by unified game loop
 
 //Renders 72 times per second, but only if any movement keys are held
 function renderKeyboardPan() {
@@ -283,7 +283,7 @@ function renderKeyboardPan() {
   //console.log("rendering")
   render(renderVars.posX, renderVars.posY)
 }
-setInterval(renderKeyboardPan, 1000 / inputVars.keyboardRenderPerSec)
+// REMOVED: setInterval(renderKeyboardPan, 1000 / inputVars.keyboardRenderPerSec) - Now handled by unified game loop
 
 //Sets currentMousePos when mouse goes down to compare position when the user drags
 function mouseDown(e) {
