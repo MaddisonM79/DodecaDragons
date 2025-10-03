@@ -1428,13 +1428,23 @@ function updateGold() {
     if (game.holyOctahedronUpgradesBought[1]) game.goldPerClick = game.goldPerClick.mul(1e250)
     if (game.tomeUpgradesBought[10]) game.goldPerClick = game.goldPerClick.pow(game.blood.add(1).log10().add(1))
   }
-  document.getElementById("gold").textContent = format(game.gold, 0)
-  document.getElementById("goldPerSecond").textContent = format(game.goldPerSecond, 0)
-  document.getElementById("goldPerClick").textContent = format(game.goldPerClick, 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('gold', format(game.gold, 0))
+    window.ui.update.setText('goldPerSecond', format(game.goldPerSecond, 0))
+    window.ui.update.setText('goldPerClick', format(game.goldPerClick, 0))
+  } else {
+    document.getElementById("gold").textContent = format(game.gold, 0)
+    document.getElementById("goldPerSecond").textContent = format(game.goldPerSecond, 0)
+    document.getElementById("goldPerClick").textContent = format(game.goldPerClick, 0)
+  }
 
   //Enables/disables buy miner button based on whether the user's gold is higher than the cost
-  if (game.gold.gte(game.minerCost)) {document.getElementById("buyMinerButton").disabled = false}
-  else {document.getElementById("buyMinerButton").disabled = true}
+  if (window.ui && window.ui.update) {
+    window.ui.update.setDisabled('buyMinerButton', !game.gold.gte(game.minerCost))
+  } else {
+    if (game.gold.gte(game.minerCost)) {document.getElementById("buyMinerButton").disabled = false}
+    else {document.getElementById("buyMinerButton").disabled = true}
+  }
 }
 
 //Small update (occurs every 150ms)
@@ -1449,7 +1459,11 @@ function updateSmall() {
   if (game.challengesActive) alertString += "<a style='color:#0ff'>!</a> You are in magic challenges<br>"
   if (game.inHell) alertString += "<a style='color:#0ff'>!</a> You are in hell<br>"
   if (game.sigilResetterActive) alertString += "<a style='color:#0ff'>!</a> Sigil resetter is enabled<br>"
-  document.getElementById("alerts").innerHTML = alertString
+  if (window.ui && window.ui.setAlert) {
+    window.ui.setAlert(alertString)
+  } else {
+    document.getElementById("alerts").innerHTML = alertString
+  }
 
   // Calculate gold
   updateGold()

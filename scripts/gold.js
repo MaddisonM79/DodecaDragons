@@ -8,8 +8,13 @@ function buyMiner() {
     if (game.gold.lt("e1e9")) game.gold = Decimal.max(game.gold.sub(game.minerCost), 0)
     game.miners = game.miners.add(1)
     game.minerCost = new Decimal(1.1).sub(game.platinumUpgradesBought[3] * 0.005).pow(game.miners).mul(20).floor()
-    document.getElementById("minerCost").textContent = format(game.minerCost, 0)
-    document.getElementsByClassName("resourceRow")[1].style.display = "block"
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('minerCost', format(game.minerCost, 0))
+      window.ui.update.showResourceRow(1)
+    } else {
+      document.getElementById("minerCost").textContent = format(game.minerCost, 0)
+      document.getElementsByClassName("resourceRow")[1].style.display = "block"
+    }
   }
 }
 
@@ -22,8 +27,13 @@ function buyMaxMiners() {
     //game.gold = game.gold.sub(BMCost)
     game.miners = game.miners.add(BMamountCanBuy)
     game.minerCost = new Decimal(1.1).sub(game.platinumUpgradesBought[3] * 0.005).pow(game.miners).mul(20).floor()
-    document.getElementById("minerCost").textContent = format(game.minerCost, 0)
-    document.getElementsByClassName("resourceRow")[1].style.display = "block"
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('minerCost', format(game.minerCost, 0))
+      window.ui.update.showResourceRow(1)
+    } else {
+      document.getElementById("minerCost").textContent = format(game.minerCost, 0)
+      document.getElementsByClassName("resourceRow")[1].style.display = "block"
+    }
   }
 }
 
@@ -31,10 +41,12 @@ function buyMaxMiners() {
 function minerAutoBuyMax() {
   if (!game.minerAutoBuyMax) {
     game.minerAutoBuyMax = true
-    document.getElementById("minerAutoBuyMaxButton").innerHTML = "Auto buy max: On"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('minerAutoBuyMaxButton', 'Auto buy max: On')
+    else document.getElementById("minerAutoBuyMaxButton").innerHTML = "Auto buy max: On"
   }
   else {
     game.minerAutoBuyMax = false
-    document.getElementById("minerAutoBuyMaxButton").innerHTML = "Auto buy max: Off"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('minerAutoBuyMaxButton', 'Auto buy max: Off')
+    else document.getElementById("minerAutoBuyMaxButton").innerHTML = "Auto buy max: Off"
   }
 }
