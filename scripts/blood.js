@@ -14,8 +14,15 @@ function unlockBlood() {
 
 function updateHellLayer() {
   game.currentHellLayer = document.getElementById("hellLayer").selectedIndex + 1
-  document.getElementById("currentHellLayer").innerHTML = hellLayerNames[game.currentHellLayer - 1]
-  document.getElementById("currentHellEffects").innerHTML = hellLayerEffects[game.currentHellLayer - 1]
+  const layerName = hellLayerNames[game.currentHellLayer - 1]
+  const layerEffects = hellLayerEffects[game.currentHellLayer - 1]
+  if (window.ui && window.ui.update) {
+    window.ui.update.setHTML('currentHellLayer', layerName)
+    window.ui.update.setHTML('currentHellEffects', layerEffects)
+  } else {
+    document.getElementById("currentHellLayer").innerHTML = layerName
+    document.getElementById("currentHellEffects").innerHTML = layerEffects
+  }
 }
 
 function enterExitHell() {
@@ -23,14 +30,24 @@ function enterExitHell() {
     if (!game.inHell) {
       game.inHell = true
       sigilReset(666)
-      document.getElementById("hellLayer").disabled = true
-      document.getElementById("enterHellButton").innerHTML = "Exit hell"
+      if (window.ui && window.ui.update) {
+        window.ui.update.setDisabled('hellLayer', true)
+        window.ui.update.setHTML('enterHellButton', 'Exit hell')
+      } else {
+        document.getElementById("hellLayer").disabled = true
+        document.getElementById("enterHellButton").innerHTML = "Exit hell"
+      }
     }
     else {
       game.inHell = false
       sigilReset(666)
-      document.getElementById("hellLayer").disabled = false
-      document.getElementById("enterHellButton").innerHTML = "Enter hell"
+      if (window.ui && window.ui.update) {
+        window.ui.update.setDisabled('hellLayer', false)
+        window.ui.update.setHTML('enterHellButton', 'Enter hell')
+      } else {
+        document.getElementById("hellLayer").disabled = false
+        document.getElementById("enterHellButton").innerHTML = "Enter hell"
+      }
     }
   }
 }

@@ -62,15 +62,24 @@ function buyFireUpgrade(x) {
   if (game[costString].lt("e1e9")) game.fire = game.fire.sub(game[costString]);
   game[boughtString] = game[boughtString].add(1);
   game[costString] = new Decimal(fireUpgradeBase[x]).pow(game[boughtString]).mul(fireUpgradeInitialCosts[x]).floor(); //update cost to reflect new count
-  document.getElementById(costString).textContent = format(game[costString], 0);
+  const costText = format(game[costString], 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText(costString, costText)
+  } else {
+    document.getElementById(costString).textContent = costText
+  }
   switch (x) {
     case 1:
       //the effect of upgrade 1 depends on whether magic upgrade 13 has been purchased
       let upg1eff = game.magicUpgradesBought[13] ? new Decimal(3.5).pow(game.fireUpgrade1Bought.pow(0.7)) : new Decimal(2).pow(game.fireUpgrade1Bought.pow(0.6));
-      document.getElementById("fireUpgrade1Effect").textContent = format(upg1eff, 2)
+      const upg1Text = format(upg1eff, 2)
+      if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade1Effect', upg1Text)
+      else document.getElementById("fireUpgrade1Effect").textContent = upg1Text
       break;
     case 6:
-      document.getElementById("fireUpgrade6Effect").textContent = format(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)), 2)
+      const upg6Text = format(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)), 2)
+      if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade6Effect', upg6Text)
+      else document.getElementById("fireUpgrade6Effect").textContent = upg6Text
       break;
   }
 }
@@ -143,15 +152,24 @@ function fireBuyMax(x) {
   if (costToBuy.lt("e1e9")) game.fire = Decimal.max(game.fire.sub(costToBuy), 0);
   game[boughtString] = game[boughtString].add(amtToBuy);
   game[costString] = new Decimal(fireUpgradeBase[x]).pow(game[boughtString]).mul(fireUpgradeInitialCosts[x]).floor(); //update cost to reflect new count
-  document.getElementById(costString).textContent = format(game[costString], 0);
+  const costText = format(game[costString], 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText(costString, costText)
+  } else {
+    document.getElementById(costString).textContent = costText
+  }
   switch (x) {
     case 1:
       //the effect of upgrade 1 depends on whether magic upgrade 13 has been purchased
       let upg1eff = game.magicUpgradesBought[13] ? new Decimal(3.5).pow(game.fireUpgrade1Bought.pow(0.7)) : new Decimal(2).pow(game.fireUpgrade1Bought.pow(0.6));
-      document.getElementById("fireUpgrade1Effect").textContent = format(upg1eff, 2)
+      const upg1Text = format(upg1eff, 2)
+      if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade1Effect', upg1Text)
+      else document.getElementById("fireUpgrade1Effect").textContent = upg1Text
       break;
     case 6:
-      document.getElementById("fireUpgrade6Effect").textContent = format(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)), 2)
+      const upg6Text = format(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)), 2)
+      if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade6Effect', upg6Text)
+      else document.getElementById("fireUpgrade6Effect").textContent = upg6Text
       break;
   }
 }
@@ -181,11 +199,13 @@ function fireMaxAll() {
 function fireAutoMaxAll() {
   if (!game.fireAutoMaxAll) {
     game.fireAutoMaxAll = true
-    document.getElementById("fireAutoMaxAllButton").innerHTML = "Auto max all: On"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('fireAutoMaxAllButton', 'Auto max all: On')
+    else document.getElementById("fireAutoMaxAllButton").innerHTML = "Auto max all: On"
   }
   else {
     game.fireAutoMaxAll = false
-    document.getElementById("fireAutoMaxAllButton").innerHTML = "Auto max all: Off"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('fireAutoMaxAllButton', 'Auto max all: Off')
+    else document.getElementById("fireAutoMaxAllButton").innerHTML = "Auto max all: Off"
   }
 }
 
@@ -194,9 +214,15 @@ function buyBlueFireUpgrade(x) {
   if (new Decimal(game.blueFireUpgradeCosts[x-1]).lt("e1e9")) game.blueFire = game.blueFire.sub(game.blueFireUpgradeCosts[x-1]);
   game.blueFireUpgradesBought[x-1] = game.blueFireUpgradesBought[x-1].add(1);
   game.blueFireUpgradeCosts[x-1] = new Decimal(blueFireUpgradeBase[x]).pow(game.blueFireUpgradesBought[x-1]).mul(blueFireUpgradeInitialCosts[x]).floor(); //update cost to reflect new count
-  document.getElementById('blueFireUpgrade' + x + 'Cost').textContent = format(game.blueFireUpgradeCosts[x-1], 0);
+  const costText = format(game.blueFireUpgradeCosts[x-1], 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('blueFireUpgrade' + x + 'Cost', costText)
+  } else {
+    document.getElementById('blueFireUpgrade' + x + 'Cost').textContent = costText
+  }
   if (x==5) {
-    document.getElementById("dragonTimeEffectCap").innerHTML = ""
+    if (window.ui && window.ui.update) window.ui.update.setHTML('dragonTimeEffectCap', '')
+    else document.getElementById("dragonTimeEffectCap").innerHTML = ""
   }
 }
 
@@ -207,7 +233,12 @@ function blueFireBuyMax(x) {
   if (costToBuy.lt("e1e9")) game.blueFire = game.blueFire.sub(costToBuy);
   game.blueFireUpgradesBought[x-1] = game.blueFireUpgradesBought[x-1].add(amtToBuy);
   game.blueFireUpgradeCosts[x-1] = new Decimal(blueFireUpgradeBase[x]).pow(game.blueFireUpgradesBought[x-1]).mul(blueFireUpgradeInitialCosts[x]).floor(); //update cost to reflect new count
-  document.getElementById('blueFireUpgrade' + x + 'Cost').textContent = format(game.blueFireUpgradeCosts[x-1], 0);
+  const costText = format(game.blueFireUpgradeCosts[x-1], 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('blueFireUpgrade' + x + 'Cost', costText)
+  } else {
+    document.getElementById('blueFireUpgrade' + x + 'Cost').textContent = costText
+  }
 }
 
 function blueFireMaxAll() {
@@ -222,11 +253,13 @@ function blueFireMaxAll() {
 function blueFireAutoMaxAll() {
   if (!game.blueFireAutoMaxAll) {
     game.blueFireAutoMaxAll = true
-    document.getElementById("blueFireAutoMaxAllButton").innerHTML = "Auto max all: On"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('blueFireAutoMaxAllButton', 'Auto max all: On')
+    else document.getElementById("blueFireAutoMaxAllButton").innerHTML = "Auto max all: On"
   }
   else {
     game.blueFireAutoMaxAll = false
-    document.getElementById("blueFireAutoMaxAllButton").innerHTML = "Auto max all: Off"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('blueFireAutoMaxAllButton', 'Auto max all: Off')
+    else document.getElementById("blueFireAutoMaxAllButton").innerHTML = "Auto max all: Off"
   }
 }
 
@@ -235,7 +268,12 @@ function buyHolyFireUpgrade(x) {
   if (new Decimal((game.holyFireUpgradeCosts[x-1])).lt("e1e9")) game.holyFire = game.holyFire.sub(game.holyFireUpgradeCosts[x-1]);
   game.holyFireUpgradesBought[x-1] = game.holyFireUpgradesBought[x-1].add(1);
   game.holyFireUpgradeCosts[x-1] = new Decimal(holyFireUpgradeBase[x]).pow(game.holyFireUpgradesBought[x-1]).mul(holyFireUpgradeInitialCosts[x]).floor(); //update cost to reflect new count
-  document.getElementById('holyFireUpgrade' + x + 'Cost').textContent = format(game.holyFireUpgradeCosts[x-1], 0);
+  const costText = format(game.holyFireUpgradeCosts[x-1], 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('holyFireUpgrade' + x + 'Cost', costText)
+  } else {
+    document.getElementById('holyFireUpgrade' + x + 'Cost').textContent = costText
+  }
 }
 
 function holyFireBuyMax(x) {
@@ -245,7 +283,12 @@ function holyFireBuyMax(x) {
   if (costToBuy.lt("e1e9")) game.holyFire = game.holyFire.sub(costToBuy);
   game.holyFireUpgradesBought[x-1] = game.holyFireUpgradesBought[x-1].add(amtToBuy);
   game.holyFireUpgradeCosts[x-1] = new Decimal(holyFireUpgradeBase[x]).pow(game.holyFireUpgradesBought[x-1]).mul(holyFireUpgradeInitialCosts[x]).floor(); //update cost to reflect new count
-  document.getElementById('holyFireUpgrade' + x + 'Cost').textContent = format(game.holyFireUpgradeCosts[x-1], 0);
+  const costText = format(game.holyFireUpgradeCosts[x-1], 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('holyFireUpgrade' + x + 'Cost', costText)
+  } else {
+    document.getElementById('holyFireUpgrade' + x + 'Cost').textContent = costText
+  }
 }
 
 function holyFireMaxAll() {
@@ -260,10 +303,12 @@ function holyFireMaxAll() {
 function holyFireAutoMaxAll() {
   if (!game.holyFireAutoMaxAll) {
     game.holyFireAutoMaxAll = true
-    document.getElementById("holyFireAutoMaxAllButton").innerHTML = "Auto max all: On"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('holyFireAutoMaxAllButton', 'Auto max all: On')
+    else document.getElementById("holyFireAutoMaxAllButton").innerHTML = "Auto max all: On"
   }
   else {
     game.holyFireAutoMaxAll = false
-    document.getElementById("holyFireAutoMaxAllButton").innerHTML = "Auto max all: Off"
+    if (window.ui && window.ui.update) window.ui.update.setHTML('holyFireAutoMaxAllButton', 'Auto max all: Off')
+    else document.getElementById("holyFireAutoMaxAllButton").innerHTML = "Auto max all: Off"
   }
 }

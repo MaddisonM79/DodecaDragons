@@ -20,14 +20,20 @@ function formPlanet(x) {
 		game.planets = game.planets.add(1)
 		game.planetsFormed[1] = game.planetsFormed[1].add(1)
 		game.planetCosts[1] = new Decimal(1e10).pow(game.planetsFormed[1].add(1)).mul(100000)
-		if (game.planetCosts[1].gt("1e499")) document.getElementsByClassName("formPlanetButton")[1].style.backgroundColor = "#aaa"
+		if (game.planetCosts[1].gt("1e499")) {
+			const buttons = document.getElementsByClassName("formPlanetButton")
+			if (buttons && buttons[1]) buttons[1].style.backgroundColor = "#aaa"
+		}
 	}
 	else if (x==3 && game.holyDodecahedrons.gte(game.planetCosts[2]) && game.planetCosts[2].lt(1e199)) {
 		game.holyDodecahedrons = game.holyDodecahedrons.sub(game.planetCosts[2])
 		game.planets = game.planets.add(1)
 		game.planetsFormed[2] = game.planetsFormed[2].add(1)
 		game.planetCosts[2] = new Decimal(100000).pow(game.planetsFormed[2].add(1))
-		if (game.planetCosts[2].gt(1e199)) document.getElementsByClassName("formPlanetButton")[2].style.backgroundColor = "#aaa"
+		if (game.planetCosts[2].gt(1e199)) {
+			const buttons = document.getElementsByClassName("formPlanetButton")
+			if (buttons && buttons[2]) buttons[2].style.backgroundColor = "#aaa"
+		}
 	}
 }
 
