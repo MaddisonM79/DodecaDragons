@@ -1295,21 +1295,74 @@ timeStopSound.volume = 0.2
 timeResumeSound = new Audio("img/timeResume.mp3")
 timeResumeSound.volume = 0.2
 
-//Small update (occurs every 150ms)
-function updateSmall() {
-  if (timeStopped) return;
-  
-  //Gold/second formula and multipliers
-  let diff = Date.now() - game.lastUpdate;
-  diff = diff/1000;
-  game.lastUpdate = Date.now();
+// Helper function: Calculate and update fire per second and related UI
+function updateFire() {
+  //Fire/second formula and multipliers
+  if (game.voidMagicUpgradesBought[5]) {game.firePerSecond = game.gold}
+  else if (game.voidMagicUpgradesBought[4]) {game.firePerSecond = game.gold.pow("1e-10")}
+  else {
+    if (game.magicUpgradesBought[13]) {game.firePerSecond = new Decimal(3.5).pow(game.fireUpgrade1Bought.pow(0.7))}
+    else {game.firePerSecond = new Decimal(2).pow(game.fireUpgrade1Bought.pow(0.6))}
+    if (game.unlocks >= 2) game.firePerSecond = game.firePerSecond.mul(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1))
+    if (game.unlocks >= 3) game.firePerSecond = game.firePerSecond.mul(1 + game.platinumUpgradesBought[1] * 0.2)
+    if (game.magicUpgradesBought[2]) game.firePerSecond = game.firePerSecond.mul(55.5)
+    if (game.magicUpgradesBought[4]) game.firePerSecond = game.firePerSecond.mul(game.gold.add(1).log2().add(1))
+    if (game.dragonStage == 5) game.firePerSecond = game.firePerSecond.mul(1e15)
+    else if (game.dragonStage == 4) game.firePerSecond = game.firePerSecond.mul(1e8)
+    else if (game.dragonStage == 3) game.firePerSecond = game.firePerSecond.mul(10000)
+    else if (game.dragonStage == 2) game.firePerSecond = game.firePerSecond.mul(100)
+    if (game.dragonStage >= 5) game.firePerSecond = game.firePerSecond.pow(new Decimal(1.3).pow(game.dragonFood))
+    if (game.unlocks >= 17) game.firePerSecond = game.firePerSecond.pow(game.blueFireUpgradesBought[1].add(1).log10().div(4).add(1))
+    if (game.holyTetrahedronUpgradesBought[9]) game.firePerSecond = game.firePerSecond.pow(10000)
+    if (game.challengesActive && game.selectedChallenges[2]) {
+      if (game.magicUpgradesBought[14]) {game.firePerSecond = game.firePerSecond.pow(0.3)}
+      else {game.firePerSecond = game.firePerSecond.pow(0.1)}
+    }
+    if (game.inHell) { //Can definitely be made better using a switch
+      if (game.currentHellLayer == 2 || game.currentHellLayer == 3) game.firePerSecond = game.firePerSecond.add(1).log10()
+      else if (game.currentHellLayer >= 4) game.firePerSecond = new Decimal(0)
+    }
+  }
+  document.getElementById("fire").textContent = format(game.fire, 0)
+  document.getElementById("firePerSecond").textContent = format(game.firePerSecond, 0)
 
-  alertString = ""
-  if (game.challengesActive) alertString += "<a style='color:#0ff'>!</a> You are in magic challenges<br>"
-  if (game.inHell) alertString += "<a style='color:#0ff'>!</a> You are in hell<br>"
-  if (game.sigilResetterActive) alertString += "<a style='color:#0ff'>!</a> Sigil resetter is enabled<br>"
-  document.getElementById("alerts").innerHTML = alertString
-  
+  //Fire gold multiplier formula and multipliers
+  if (game.darkMagicUpgradesBought[5]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)))}
+  else if (game.magicUpgradesBought[8]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)))}
+  else {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)))}
+  document.getElementById("fireGoldMultiplier").textContent = format(game.fireGoldMultiplier, 2)
+
+  document.getElementsByClassName("resourceText")[0].textContent = format(game.gold, 0)
+  document.getElementsByClassName("resourceText")[1].textContent = format(game.miners, 0)
+  if (game.unlocks >= 1) document.getElementsByClassName("resourceText")[2].textContent = format(game.fire, 0)
+  if (game.unlocks >= 2) {
+    //Enables/disables fire upgrade buttons based on whether the user's fire is higher than the cost (code can be made better)
+    if (game.fire.gte(game.fireUpgrade1Cost) && game.fireUpgrade1Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[0].disabled = false}
+    else {document.getElementsByClassName("fireUpgrade")[0].disabled = true}
+    if (game.fire.gte(game.fireUpgrade2Cost) && game.fireUpgrade2Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[1].disabled = false}
+    else {document.getElementsByClassName("fireUpgrade")[1].disabled = true}
+    if (game.fire.gte(game.fireUpgrade3Cost) && game.fireUpgrade3Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[2].disabled = false}
+    else {document.getElementsByClassName("fireUpgrade")[2].disabled = true}
+    if (game.fire.gte(game.fireUpgrade4Cost) && game.fireUpgrade4Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[3].disabled = false}
+    else {document.getElementsByClassName("fireUpgrade")[3].disabled = true}
+    if (game.fire.gte(game.fireUpgrade5Cost) && game.fireUpgrade5Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[4].disabled = false}
+    else {document.getElementsByClassName("fireUpgrade")[4].disabled = true}
+    if (game.fire.gte(game.fireUpgrade6Cost) && game.fireUpgrade6Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[5].disabled = false}
+    else {document.getElementsByClassName("fireUpgrade")[5].disabled = true}
+    if (game.darkMagicUpgradesBought[5]) {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
+    else if (game.magicUpgradesBought[8]) {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
+    else {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
+    if (game.magicUpgradesBought[8]) {document.getElementById("fireUpgrade3Effect").textContent = format(game.fireUpgrade3Bought.pow(12).mul(4).add(1), 2)}
+    else {document.getElementById("fireUpgrade3Effect").textContent = format(game.fireUpgrade3Bought.pow(2.6).mul(4).add(1), 2)}
+    if (game.platinumUpgradesBought[8] > 0) {document.getElementById("fireUpgrade4Effect").textContent = format(game.fireUpgrade4Bought.pow(game.miners.pow(0.3)).pow(game.platinumUpgradesBought[8] / 4).add(1), 2)}
+    else {document.getElementById("fireUpgrade4Effect").textContent = format(game.fireUpgrade4Bought.pow(1.5).mul(game.miners).div(50).add(1), 2)}
+    document.getElementById("fireUpgrade5Effect").textContent = format(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1), 2)
+  }
+}
+
+// Helper function: Calculate and update gold per second and gold per click
+function updateGold() {
+  //Gold/second formula and multipliers
   game.goldPerSecond = game.miners.mul(game.fire.div(10).add(1).log10().mul(2).add(1))
   if (game.unlocks >= 2) {
     if (game.darkMagicUpgradesBought[5]) {game.goldPerSecond = game.goldPerSecond.mul(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)))}
@@ -1350,7 +1403,7 @@ function updateSmall() {
     if (game.holyOctahedronUpgradesBought[1]) game.goldPerSecond = game.goldPerSecond.mul(1e250)
     if (game.tomeUpgradesBought[10]) game.goldPerSecond = game.goldPerSecond.pow(game.blood.add(1).log10().add(1))
   }
-    
+
   //Gold/click formula and multipliers
   if (game.magicUpgradesBought[8]) {game.goldPerClick = game.fireUpgrade3Bought.pow(12).mul(4).add(1)}
   else {game.goldPerClick = game.fireUpgrade3Bought.pow(2.6).mul(4).add(1)}
@@ -1382,68 +1435,52 @@ function updateSmall() {
   //Enables/disables buy miner button based on whether the user's gold is higher than the cost
   if (game.gold.gte(game.minerCost)) {document.getElementById("buyMinerButton").disabled = false}
   else {document.getElementById("buyMinerButton").disabled = true}
+}
 
-  //Fire/second formula and multipliers
-  if (game.voidMagicUpgradesBought[5]) {game.firePerSecond = game.gold}
-  else if (game.voidMagicUpgradesBought[4]) {game.firePerSecond = game.gold.pow("1e-10")}
-  else {
-    if (game.magicUpgradesBought[13]) {game.firePerSecond = new Decimal(3.5).pow(game.fireUpgrade1Bought.pow(0.7))}
-    else {game.firePerSecond = new Decimal(2).pow(game.fireUpgrade1Bought.pow(0.6))}
-    if (game.unlocks >= 2) game.firePerSecond = game.firePerSecond.mul(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1))
-    if (game.unlocks >= 3) game.firePerSecond = game.firePerSecond.mul(1 + game.platinumUpgradesBought[1] * 0.2)
-    if (game.magicUpgradesBought[2]) game.firePerSecond = game.firePerSecond.mul(55.5)
-    if (game.magicUpgradesBought[4]) game.firePerSecond = game.firePerSecond.mul(game.gold.add(1).log2().add(1))
-    if (game.dragonStage == 5) game.firePerSecond = game.firePerSecond.mul(1e15)
-    else if (game.dragonStage == 4) game.firePerSecond = game.firePerSecond.mul(1e8)
-    else if (game.dragonStage == 3) game.firePerSecond = game.firePerSecond.mul(10000)
-    else if (game.dragonStage == 2) game.firePerSecond = game.firePerSecond.mul(100)
-    if (game.dragonStage >= 5) game.firePerSecond = game.firePerSecond.pow(new Decimal(1.3).pow(game.dragonFood))
-    if (game.unlocks >= 17) game.firePerSecond = game.firePerSecond.pow(game.blueFireUpgradesBought[1].add(1).log10().div(4).add(1))
-    if (game.holyTetrahedronUpgradesBought[9]) game.firePerSecond = game.firePerSecond.pow(10000)
-    if (game.challengesActive && game.selectedChallenges[2]) {
-      if (game.magicUpgradesBought[14]) {game.firePerSecond = game.firePerSecond.pow(0.3)}
-      else {game.firePerSecond = game.firePerSecond.pow(0.1)}
-    }
-    if (game.inHell) { //Can definitely be made better using a switch
-      if (game.currentHellLayer == 2 || game.currentHellLayer == 3) game.firePerSecond = game.firePerSecond.add(1).log10()
-      else if (game.currentHellLayer >= 4) game.firePerSecond = new Decimal(0)
-    }
-  }
-  document.getElementById("fire").textContent = format(game.fire, 0)
-  document.getElementById("firePerSecond").textContent = format(game.firePerSecond, 0)
-  
-  //Fire gold multiplier formula and multipliers
-  if (game.darkMagicUpgradesBought[5]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)))}
-  else if (game.magicUpgradesBought[8]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)))}
-  else {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)))}
-  document.getElementById("fireGoldMultiplier").textContent = format(game.fireGoldMultiplier, 2)
-  
-  document.getElementsByClassName("resourceText")[0].textContent = format(game.gold, 0)
-  document.getElementsByClassName("resourceText")[1].textContent = format(game.miners, 0)
-  if (game.unlocks >= 1) document.getElementsByClassName("resourceText")[2].textContent = format(game.fire, 0)
-  if (game.unlocks >= 2) {
-    //Enables/disables fire upgrade buttons based on whether the user's fire is higher than the cost (code can be made better)
-    if (game.fire.gte(game.fireUpgrade1Cost) && game.fireUpgrade1Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[0].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[0].disabled = true}
-    if (game.fire.gte(game.fireUpgrade2Cost) && game.fireUpgrade2Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[1].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[1].disabled = true}
-    if (game.fire.gte(game.fireUpgrade3Cost) && game.fireUpgrade3Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[2].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[2].disabled = true}
-    if (game.fire.gte(game.fireUpgrade4Cost) && game.fireUpgrade4Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[3].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[3].disabled = true}
-    if (game.fire.gte(game.fireUpgrade5Cost) && game.fireUpgrade5Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[4].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[4].disabled = true}
-    if (game.fire.gte(game.fireUpgrade6Cost) && game.fireUpgrade6Cost.lt("e1e9")) {document.getElementsByClassName("fireUpgrade")[5].disabled = false}
-    else {document.getElementsByClassName("fireUpgrade")[5].disabled = true}
-    if (game.darkMagicUpgradesBought[5]) {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
-    else if (game.magicUpgradesBought[8]) {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
-    else {document.getElementById("fireUpgrade2Effect").textContent = format(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)), 2)}
-    if (game.magicUpgradesBought[8]) {document.getElementById("fireUpgrade3Effect").textContent = format(game.fireUpgrade3Bought.pow(12).mul(4).add(1), 2)}
-    else {document.getElementById("fireUpgrade3Effect").textContent = format(game.fireUpgrade3Bought.pow(2.6).mul(4).add(1), 2)}
-    if (game.platinumUpgradesBought[8] > 0) {document.getElementById("fireUpgrade4Effect").textContent = format(game.fireUpgrade4Bought.pow(game.miners.pow(0.3)).pow(game.platinumUpgradesBought[8] / 4).add(1), 2)}
-    else {document.getElementById("fireUpgrade4Effect").textContent = format(game.fireUpgrade4Bought.pow(1.5).mul(game.miners).div(50).add(1), 2)}
-    document.getElementById("fireUpgrade5Effect").textContent = format(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1), 2)
-  }
+//Small update (occurs every 150ms)
+function updateSmall() {
+  if (timeStopped) return;
+
+  let diff = Date.now() - game.lastUpdate;
+  diff = diff/1000;
+  game.lastUpdate = Date.now();
+
+  alertString = ""
+  if (game.challengesActive) alertString += "<a style='color:#0ff'>!</a> You are in magic challenges<br>"
+  if (game.inHell) alertString += "<a style='color:#0ff'>!</a> You are in hell<br>"
+  if (game.sigilResetterActive) alertString += "<a style='color:#0ff'>!</a> Sigil resetter is enabled<br>"
+  document.getElementById("alerts").innerHTML = alertString
+
+  // Calculate gold
+  updateGold()
+
+  // Calculate fire
+  updateFire()
+
+  // Calculate advanced resources (platinum, magic, sigils, etc.)
+  updateAdvancedResources()
+
+  // Commented out auto-updates (handled elsewhere)
+  //game.gold = game.gold.add(game.goldPerSecond.mul(diff));
+  //if (game.unlocks >= 1) game.fire = game.fire.add(game.firePerSecond.mul(diff)) // .mul(diff)
+  //if (game.unlockedAchievements[6] > 2 && game.fireAutoMaxAll) fireMaxAll()
+  //if (game.unlockedAchievements[6] > 0) dragonSpendTime()
+  //if (game.unlockedAchievements[10] > 0) dragonFeed();
+  //if (game.unlockedAchievements[3] > 7) {game.magic = game.magic.add(game.magicToGet.mul(diff)) }
+  //else if (game.unlockedAchievements[3] > 5) {game.magic = game.magic.add(game.magicToGet.mul(diff).div(100))}
+  //if (game.unlocks >= 10) game.cyanSigilPower = game.cyanSigilPower.add(game.cyanSigilPowerPerSecond.mul(diff))
+  //if (game.unlocks >= 11) game.blueSigilPower = game.blueSigilPower.add(game.blueSigilPowerPerSecond.mul(diff))
+  //if (game.unlocks >= 12) game.indigoSigilPower = game.indigoSigilPower.add(game.indigoSigilPowerPerSecond.mul(diff))
+  //if (game.unlocks >= 13) game.violetSigilPower = game.violetSigilPower.add(game.violetSigilPowerPerSecond.mul(diff))
+  //if (game.unlocks >= 14) game.pinkSigilPower = game.pinkSigilPower.add(game.pinkSigilPowerPerSecond.mul(diff))
+  //if (game.unlockedAchievements[5] > 3) game.uranium = game.uranium.add(game.uraniumToGet.mul(diff))
+  //if (game.unlockedAchievements[0] > 8 && game.minerAutoBuyMax) buyMaxMiners()
+}
+updateSmall()
+// REMOVED: setInterval(updateSmall, 150) - Now handled by unified game loop
+
+// Helper function: Update platinum calculations
+function updatePlatinum() {
   if (game.unlocks >= 3) {
     document.getElementById("platinum").textContent = format(game.platinum, 0)
     document.getElementsByClassName("resourceText")[3].textContent = format(game.platinum, 0)
@@ -1473,6 +1510,11 @@ function updateSmall() {
     if (game.magicUpgradesBought[10]) {document.getElementById("platinumUpgrade7Max").textContent = "20"}
     else {document.getElementById("platinumUpgrade7Max").textContent = "10"}
   }
+}
+
+function updateAdvancedResources() {
+  // Call all advanced resource update functions
+  updatePlatinum()
   if (game.unlocks >= 4) {
     //Determines the amount of magic to get when doing a magic reset
     //game.magicToGet = game.gold.div(1e15).pow(0.1)
@@ -2171,23 +2213,7 @@ function updateSmall() {
 		if (game.finalityCubeEffect.gt(1e100)) game.finalityCubeEffect = new Decimal(1e100)
 		document.getElementById("finalityCubeEffect").textContent = format(game.finalityCubeEffect, 0)
 	}
-  //game.gold = game.gold.add(game.goldPerSecond.mul(diff));
-  //if (game.unlocks >= 1) game.fire = game.fire.add(game.firePerSecond.mul(diff)) // .mul(diff)
-  //if (game.unlockedAchievements[6] > 2 && game.fireAutoMaxAll) fireMaxAll()
-  //if (game.unlockedAchievements[6] > 0) dragonSpendTime()
-  //if (game.unlockedAchievements[10] > 0) dragonFeed();
-  //if (game.unlockedAchievements[3] > 7) {game.magic = game.magic.add(game.magicToGet.mul(diff)) }
-  //else if (game.unlockedAchievements[3] > 5) {game.magic = game.magic.add(game.magicToGet.mul(diff).div(100))}
-  //if (game.unlocks >= 10) game.cyanSigilPower = game.cyanSigilPower.add(game.cyanSigilPowerPerSecond.mul(diff))
-  //if (game.unlocks >= 11) game.blueSigilPower = game.blueSigilPower.add(game.blueSigilPowerPerSecond.mul(diff))
-  //if (game.unlocks >= 12) game.indigoSigilPower = game.indigoSigilPower.add(game.indigoSigilPowerPerSecond.mul(diff))
-  //if (game.unlocks >= 13) game.violetSigilPower = game.violetSigilPower.add(game.violetSigilPowerPerSecond.mul(diff))
-  //if (game.unlocks >= 14) game.pinkSigilPower = game.pinkSigilPower.add(game.pinkSigilPowerPerSecond.mul(diff))
-  //if (game.unlockedAchievements[5] > 3) game.uranium = game.uranium.add(game.uraniumToGet.mul(diff))
-  //if (game.unlockedAchievements[0] > 8 && game.minerAutoBuyMax) buyMaxMiners()
 }
-updateSmall()
-// REMOVED: setInterval(updateSmall, 150) - Now handled by unified game loop
 
 let timeSinceLastUpdate = Date.now()
 //Large update (occurs once per second)
@@ -2522,11 +2548,13 @@ function timeStopStart() {
     timeStopped = true
     timeStopSound.play()
     setTimeout(function() {document.body.style.filter = "grayscale(100%)"}, 500)
+    document.getElementById("pauseButton").textContent = "Resume"
   }
   else {
     timeStopped = false
     timeResumeSound.play()
     setTimeout(function() {document.body.style.filter = "none"}, 500)
+    document.getElementById("pauseButton").textContent = "Pause"
   }
 }
 
