@@ -238,4 +238,10 @@ window.sigilsLogic.orangeUpgrade3Effect = s => new Decimal(6).pow(s.orangeSigilU
 // Yellow
 window.sigilsLogic.yellowUpgrade1Effect = s => s.yellowSigilUpgradesBought[0].add(1)
 window.sigilsLogic.yellowUpgrade2Effect = s => s.yellowSigilUpgradesBought[1].pow(0.5).mul(2).add(1)
+
+// --- Resource effect helpers (for UI text) ---
+window.sigilsLogic.redSigilEffect = s => new Decimal(10).pow(s.redSigils.pow(0.5).mul(400))
+window.sigilsLogic.orangeSigilEffect = s => new Decimal(10).pow(s.orangeSigils.pow(0.5).mul(800))
+window.sigilsLogic.yellowSigilEffect = s => new Decimal(10).pow(s.yellowSigils.pow(0.5).mul(1600))
+window.sigilsLogic.pinkSigilEffect = s => s.pinkSigils.add(1).pow(6)
 window.sigilsLogic.yellowUpgrade3Effect = s => new Decimal(15).pow(s.yellowSigilUpgradesBought[2].pow(0.5))

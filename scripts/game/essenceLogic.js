@@ -75,3 +75,36 @@ window.essenceLogic.finalityUpg1Effect = s => new Decimal(2).pow(s.finalityEssen
 window.essenceLogic.finalityUpg2Effect = s => new Decimal(1.1).pow(s.finalityEssenceUpgradesBought[1].pow(0.5))
 window.essenceLogic.finalityUpg3Effect = s => new Decimal(1.2).pow(s.finalityEssenceUpgradesBought[2].pow(0.5))
 window.essenceLogic.finalityUpg4Effect = s => new Decimal(10000).pow(s.finalityEssenceUpgradesBought[3].pow(0.5))
+
+// Death essence upgrade effects (extracted from updateLarge)
+window.essenceLogic.deathUpg1Effect = s => new Decimal(2).pow(s.deathEssenceUpgradesBought[0].pow(0.5))
+
+window.essenceLogic.deathUpg2Effect = function(s) {
+  if (s.deathEssenceUpgradesBought[1].gt(0)) {
+    return new Decimal(10).pow(new Decimal(2).pow(s.deathEssenceUpgradesBought[1].pow(0.5)).mul(1e10))
+  }
+  return new Decimal(1)
+}
+
+// Returns { effect: Decimal, softcapLabel: string }
+window.essenceLogic.deathUpg3Effect = function(s) {
+  if (!s.deathEssenceUpgradesBought[2].gt(0)) {
+    return { effect: new Decimal(1), softcapLabel: '' }
+  }
+  let prePow = new Decimal(2).pow(s.deathEssenceUpgradesBought[2].pow(0.7)).mul(10000)
+  let softcapLabel = ''
+  if (prePow.gt(500000)) {
+    prePow = prePow.mul(500000).pow(0.5)
+    if (prePow.gt(1e9)) {
+      prePow = new Decimal(1e9)
+      softcapLabel = ' (hardcapped)'
+    } else {
+      softcapLabel = ' (softcapped)'
+    }
+  }
+  const effect = new Decimal(10).pow(prePow)
+  return { effect, softcapLabel }
+}
+
+window.essenceLogic.deathUpg4Effect = s => new Decimal(20).pow(s.deathEssenceUpgradesBought[3].pow(0.7))
+window.essenceLogic.deathUpg5Effect = s => new Decimal(10000).pow(s.deathEssenceUpgradesBought[4].pow(0.5))

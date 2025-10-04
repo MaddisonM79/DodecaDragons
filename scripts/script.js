@@ -1731,7 +1731,7 @@ function updateAdvancedResources() {
       window.ui.update.batchSetText({
         nextPinkSigil: nextPinkSigilText,
         pinkSigils: format(game.pinkSigils, 0),
-        pinkSigilEffect: format(game.pinkSigils.add(1).pow(6), 0),
+        pinkSigilEffect: format(window.sigilsLogic.pinkSigilEffect(game), 0),
         pinkSigilsToGet: format(game.pinkSigilsToGet, 0),
         pinkSigilPower: format(game.pinkSigilPower, 2),
         pinkSigilPowerPerSecond: format(game.pinkSigilPowerPerSecond, 2)
@@ -1741,27 +1741,27 @@ function updateAdvancedResources() {
       document.getElementById("nextPinkSigil").textContent = nextPinkSigilText
       document.getElementById("pinkSigils").textContent = format(game.pinkSigils, 0)
       document.getElementsByClassName("resourceText")[11].textContent = format(game.pinkSigils, 0)
-      document.getElementById("pinkSigilEffect").textContent = format(game.pinkSigils.add(1).pow(6), 0)
+      document.getElementById("pinkSigilEffect").textContent = format(window.sigilsLogic.pinkSigilEffect(game), 0)
       document.getElementById("pinkSigilsToGet").textContent = format(game.pinkSigilsToGet, 0)
       document.getElementById("pinkSigilPower").textContent = format(game.pinkSigilPower, 2)
       document.getElementById("pinkSigilPowerPerSecond").textContent = format(game.pinkSigilPowerPerSecond, 2)
     }
   }
   if (game.unlocks >= 15) {
-    game.knowledgeTradeLevelCap = Decimal.min(game.highestKnowledge.add(1).log2().mul(1.6).add(3).floor(), 9999)
+    game.knowledgeTradeLevelCap = window.knowledgeLogic.calculateKnowledgeTradeLevelCap(game)
 
     if (window.ui && window.ui.update) {
       window.ui.update.batchSetText({
         knowledge: format(game.knowledge, 0),
         highestKnowledge: format(game.highestKnowledge, 0),
-        knowledgeSigilBoost: format(game.highestKnowledge.div(3).pow(0.7).add(1), 2)
+        knowledgeSigilBoost: format(window.knowledgeLogic.calculateKnowledgeSigilBoost(game), 2)
       })
       window.ui.update.setResourceText(12, format(game.knowledge, 0))
     } else {
       document.getElementById("knowledge").textContent = format(game.knowledge, 0)
       document.getElementsByClassName("resourceText")[12].textContent = format(game.knowledge, 0)
       document.getElementById("highestKnowledge").textContent = format(game.highestKnowledge, 0)
-      document.getElementById("knowledgeSigilBoost").textContent = format(game.highestKnowledge.div(3).pow(0.7).add(1), 2)
+      document.getElementById("knowledgeSigilBoost").textContent = format(window.knowledgeLogic.calculateKnowledgeSigilBoost(game), 2)
     }
 
     if (game.knowledgeTradeLevelCap.lt(1e308)) {
@@ -1894,7 +1894,7 @@ function updateAdvancedResources() {
       window.ui.update.batchSetText({
         nextRedSigil: nextRedSigilText,
         redSigils: format(game.redSigils, 0),
-        redSigilEffect: format(new Decimal(10).pow(game.redSigils.pow(0.5).mul(400)), 0),
+        redSigilEffect: format(window.sigilsLogic.redSigilEffect(game), 0),
         redSigilsToGet: format(game.redSigilsToGet, 0),
         redSigilPower: format(game.redSigilPower, 2),
         redSigilPowerPerSecond: format(game.redSigilPowerPerSecond, 2)
@@ -1904,7 +1904,7 @@ function updateAdvancedResources() {
       document.getElementById("nextRedSigil").textContent = nextRedSigilText
       document.getElementById("redSigils").textContent = format(game.redSigils, 0)
       document.getElementsByClassName("resourceText")[17].textContent = format(game.redSigils, 0)
-      document.getElementById("redSigilEffect").textContent = format(new Decimal(10).pow(game.redSigils.pow(0.5).mul(400)), 0)
+      document.getElementById("redSigilEffect").textContent = format(window.sigilsLogic.redSigilEffect(game), 0)
       document.getElementById("redSigilsToGet").textContent = format(game.redSigilsToGet, 0)
       document.getElementById("redSigilPower").textContent = format(game.redSigilPower, 2)
       document.getElementById("redSigilPowerPerSecond").textContent = format(game.redSigilPowerPerSecond, 2)
@@ -1920,7 +1920,7 @@ function updateAdvancedResources() {
       window.ui.update.batchSetText({
         nextOrangeSigil: nextOrangeSigilText,
         orangeSigils: format(game.orangeSigils, 0),
-        orangeSigilEffect: format(new Decimal(10).pow(game.orangeSigils.pow(0.5).mul(800)), 0),
+        orangeSigilEffect: format(window.sigilsLogic.orangeSigilEffect(game), 0),
         orangeSigilsToGet: format(game.orangeSigilsToGet, 0),
         orangeSigilPower: format(game.orangeSigilPower, 2),
         orangeSigilPowerPerSecond: format(game.orangeSigilPowerPerSecond, 2)
@@ -1930,7 +1930,7 @@ function updateAdvancedResources() {
       document.getElementById("nextOrangeSigil").textContent = nextOrangeSigilText
       document.getElementById("orangeSigils").textContent = format(game.orangeSigils, 0)
       document.getElementsByClassName("resourceText")[18].textContent = format(game.orangeSigils, 0)
-      document.getElementById("orangeSigilEffect").textContent = format(new Decimal(10).pow(game.orangeSigils.pow(0.5).mul(800)), 0)
+      document.getElementById("orangeSigilEffect").textContent = format(window.sigilsLogic.orangeSigilEffect(game), 0)
       document.getElementById("orangeSigilsToGet").textContent = format(game.orangeSigilsToGet, 0)
       document.getElementById("orangeSigilPower").textContent = format(game.orangeSigilPower, 2)
       document.getElementById("orangeSigilPowerPerSecond").textContent = format(game.orangeSigilPowerPerSecond, 2)
@@ -1946,7 +1946,7 @@ function updateAdvancedResources() {
       window.ui.update.batchSetText({
         nextYellowSigil: nextYellowSigilText,
         yellowSigils: yellowSigilsText,
-        yellowSigilEffect: format(new Decimal(10).pow(game.yellowSigils.pow(0.5).mul(1600)), 0),
+        yellowSigilEffect: format(window.sigilsLogic.yellowSigilEffect(game), 0),
         yellowSigilsToGet: format(game.yellowSigilsToGet, 0),
         yellowSigilPower: format(game.yellowSigilPower, 2),
         yellowSigilPowerPerSecond: format(game.yellowSigilPowerPerSecond, 2)
@@ -1956,7 +1956,7 @@ function updateAdvancedResources() {
       document.getElementById("nextYellowSigil").textContent = nextYellowSigilText
       document.getElementById("yellowSigils").textContent = yellowSigilsText
       document.getElementsByClassName("resourceText")[19].textContent = yellowSigilsText
-      document.getElementById("yellowSigilEffect").textContent = format(new Decimal(10).pow(game.yellowSigils.pow(0.5).mul(1600)), 0)
+      document.getElementById("yellowSigilEffect").textContent = format(window.sigilsLogic.yellowSigilEffect(game), 0)
       document.getElementById("yellowSigilsToGet").textContent = format(game.yellowSigilsToGet, 0)
       document.getElementById("yellowSigilPower").textContent = format(game.yellowSigilPower, 2)
       document.getElementById("yellowSigilPowerPerSecond").textContent = format(game.yellowSigilPowerPerSecond, 2)
@@ -2069,66 +2069,59 @@ function updateAdvancedResources() {
 	}
   if (game.unlocks >= 34) {
 		game.deathEssencePerSecond = window.essenceLogic.calculateDeathEssencePerSecond(game)
-		document.getElementById("deathEssence").textContent = format(game.deathEssence, 0)
-		document.getElementsByClassName("resourceText")[29].textContent = format(game.deathEssence, 0)
-		document.getElementById("deathEssencePerSecond").textContent = format(game.deathEssencePerSecond, 0)
-		document.getElementById("deathEssenceMultiplier").textContent = format(game.deathEssence.add(1).log10().mul(2).add(1), 2)
-		for (let i=0;i<5;i++) document.getElementsByClassName("deathEssenceUpgradeCost")[i].textContent = format(game.deathEssenceUpgradeCosts[i], 0)
-		document.getElementsByClassName("deathEssenceUpgradeEffect")[0].textContent = format(new Decimal(2).pow(game.deathEssenceUpgradesBought[0].pow(0.5)), 2)
-		if (game.deathEssenceUpgradesBought[1].gt(0)) {document.getElementsByClassName("deathEssenceUpgradeEffect")[1].textContent = format(new Decimal(10).pow(new Decimal(2).pow(game.deathEssenceUpgradesBought[1].pow(0.5)).mul(1e10)), 2)}
-		else {document.getElementsByClassName("deathEssenceUpgradeEffect")[1].textContent = format(1, 2)}
-		if (game.deathEssenceUpgradesBought[2].gt(0)) {
-			let deathEssenceUpgrade3Effect = new Decimal(2).pow(game.deathEssenceUpgradesBought[2].pow(0.7)).mul(10000)
-			if (deathEssenceUpgrade3Effect.gt(500000)) {
-				deathEssenceUpgrade3Effect = deathEssenceUpgrade3Effect.mul(500000).pow(0.5)
-				if (deathEssenceUpgrade3Effect.gt(1e9)) {
-					deathEssenceUpgrade3Effect = new Decimal(1e9)
-					document.getElementById("deathEssenceUpgrade3Softcap").textContent = " (hardcapped)"
-				}
-				else {
-					document.getElementById("deathEssenceUpgrade3Softcap").textContent = " (softcapped)"
-				}
-			}
-			else {
-				document.getElementById("deathEssenceUpgrade3Softcap").textContent = ""
-			}
-			deathEssenceUpgrade3Effect = new Decimal(10).pow(deathEssenceUpgrade3Effect)
-			document.getElementsByClassName("deathEssenceUpgradeEffect")[2].textContent = format(deathEssenceUpgrade3Effect, 2)
+		if (window.ui && window.ui.update) {
+			window.ui.update.setText('deathEssence', format(game.deathEssence, 0))
+			window.ui.update.setResourceText(29, format(game.deathEssence, 0))
+			window.ui.update.setText('deathEssencePerSecond', format(game.deathEssencePerSecond, 0))
+			window.ui.update.setText('deathEssenceMultiplier', format(game.deathEssence.add(1).log10().mul(2).add(1), 2))
+			for (let i=0;i<5;i++) document.getElementsByClassName("deathEssenceUpgradeCost")[i].textContent = format(game.deathEssenceUpgradeCosts[i], 0)
+      window.ui.update.setText('deathEssenceUpgrade3Softcap', '')
+      window.ui.update.setClassText('deathEssenceUpgradeEffect', 0, format(window.essenceLogic.deathUpg1Effect(game), 2))
+      const upg2 = window.essenceLogic.deathUpg2Effect(game)
+      window.ui.update.setClassText('deathEssenceUpgradeEffect', 1, format(upg2, 2))
+      const upg3 = window.essenceLogic.deathUpg3Effect(game)
+      window.ui.update.setText('deathEssenceUpgrade3Softcap', upg3.softcapLabel)
+      window.ui.update.setClassText('deathEssenceUpgradeEffect', 2, format(upg3.effect, 2))
+      window.ui.update.setClassText('deathEssenceUpgradeEffect', 3, format(window.essenceLogic.deathUpg4Effect(game), 2))
+      window.ui.update.setClassText('deathEssenceUpgradeEffect', 4, format(window.essenceLogic.deathUpg5Effect(game), 2))
+		} else {
+			document.getElementById("deathEssence").textContent = format(game.deathEssence, 0)
+			document.getElementsByClassName("resourceText")[29].textContent = format(game.deathEssence, 0)
+			document.getElementById("deathEssencePerSecond").textContent = format(game.deathEssencePerSecond, 0)
+			document.getElementById("deathEssenceMultiplier").textContent = format(game.deathEssence.add(1).log10().mul(2).add(1), 2)
+			for (let i=0;i<5;i++) document.getElementsByClassName("deathEssenceUpgradeCost")[i].textContent = format(game.deathEssenceUpgradeCosts[i], 0)
+			document.getElementsByClassName("deathEssenceUpgradeEffect")[0].textContent = format(window.essenceLogic.deathUpg1Effect(game), 2)
+			const upg2 = window.essenceLogic.deathUpg2Effect(game)
+			document.getElementsByClassName("deathEssenceUpgradeEffect")[1].textContent = format(upg2, 2)
+			const upg3 = window.essenceLogic.deathUpg3Effect(game)
+			document.getElementById("deathEssenceUpgrade3Softcap").textContent = upg3.softcapLabel
+			document.getElementsByClassName("deathEssenceUpgradeEffect")[2].textContent = format(upg3.effect, 2)
+			document.getElementsByClassName("deathEssenceUpgradeEffect")[3].textContent = format(window.essenceLogic.deathUpg4Effect(game), 2)
+			document.getElementsByClassName("deathEssenceUpgradeEffect")[4].textContent = format(window.essenceLogic.deathUpg5Effect(game), 2)
 		}
-		else {
-			document.getElementsByClassName("deathEssenceUpgradeEffect")[2].textContent = format(1, 2)
-			document.getElementById("deathEssenceUpgrade3Softcap").textContent = ""
-		}
-		document.getElementsByClassName("deathEssenceUpgradeEffect")[3].textContent = format(new Decimal(20).pow(game.deathEssenceUpgradesBought[3].pow(0.7)), 2)
-		document.getElementsByClassName("deathEssenceUpgradeEffect")[4].textContent = format(new Decimal(10000).pow(game.deathEssenceUpgradesBought[4].pow(0.5)), 2)
-	}
+  }
 	if (game.unlocks >= 35) {
-		document.getElementById("nuclearPasta").textContent = format(game.nuclearPasta, 0)
-		document.getElementsByClassName("resourceText")[30].textContent = format(game.nuclearPasta, 0)
-		document.getElementById("nuclearPastaCost").textContent = format(game.nuclearPastaCost, 0)
-		document.getElementById("nuclearPastaState").innerHTML = nuclearPastaNames[game.nuclearPastaState-1]
-		document.getElementById("nuclearPastaPositiveEffect").innerHTML = nuclearPastaPositiveEffects[game.nuclearPastaState-1]
-		document.getElementById("nuclearPastaNegativeEffect").innerHTML = nuclearPastaNegativeEffects[game.nuclearPastaState-1]
-		switch(game.nuclearPastaState) {
-			case 1:
-				document.getElementById("nuclearPastaEffect").textContent = format(Decimal.min(new Decimal(3).pow(game.nuclearPasta.pow(0.7)), 1e75), 2)
-				break;
-			case 2:
-				document.getElementById("nuclearPastaEffect").textContent = format(Decimal.min(new Decimal(2.5).pow(game.nuclearPasta.pow(0.6)), 1e7), 2)
-				break;
-			case 3:
-				document.getElementById("nuclearPastaEffect").textContent = format(Decimal.min(new Decimal(10).pow(game.nuclearPasta.pow(0.7)), "1e1500"), 2)
-				break;
-			case 4:
-				document.getElementById("nuclearPastaEffect").textContent = format(Decimal.min(new Decimal(0.02).mul(game.nuclearPasta.pow(0.6)).add(1), 1.3), 2)
-				break;
-			case 5:
-				document.getElementById("nuclearPastaEffect").textContent = format(Decimal.min(new Decimal(1.5).pow(game.nuclearPasta.pow(0.6)), 1e30), 2)
-				break;
-			default:
-				document.getElementById("nuclearPastaEffect").innerHTML = ""
-				break;
-		} 
+		const npText = format(game.nuclearPasta, 0)
+		const effectVal = window.nuclearPastaLogic.calculateEffect(game)
+		if (window.ui && window.ui.update) {
+			window.ui.update.setText('nuclearPasta', npText)
+			window.ui.update.setResourceText(30, npText)
+			window.ui.update.setText('nuclearPastaCost', format(game.nuclearPastaCost, 0))
+			window.ui.update.setHTML('nuclearPastaState', nuclearPastaNames[game.nuclearPastaState-1])
+			window.ui.update.setHTML('nuclearPastaPositiveEffect', nuclearPastaPositiveEffects[game.nuclearPastaState-1])
+			window.ui.update.setHTML('nuclearPastaNegativeEffect', nuclearPastaNegativeEffects[game.nuclearPastaState-1])
+			if (effectVal) window.ui.update.setText('nuclearPastaEffect', format(effectVal, 2))
+			else window.ui.update.setHTML('nuclearPastaEffect', '')
+		} else {
+			document.getElementById("nuclearPasta").textContent = npText
+			document.getElementsByClassName("resourceText")[30].textContent = npText
+			document.getElementById("nuclearPastaCost").textContent = format(game.nuclearPastaCost, 0)
+			document.getElementById("nuclearPastaState").innerHTML = nuclearPastaNames[game.nuclearPastaState-1]
+			document.getElementById("nuclearPastaPositiveEffect").innerHTML = nuclearPastaPositiveEffects[game.nuclearPastaState-1]
+			document.getElementById("nuclearPastaNegativeEffect").innerHTML = nuclearPastaNegativeEffects[game.nuclearPastaState-1]
+			if (effectVal) document.getElementById("nuclearPastaEffect").textContent = format(effectVal, 2)
+			else document.getElementById("nuclearPastaEffect").innerHTML = ""
+		}
 	}
   if (game.unlocks >= 36) {
     game.finalityEssencePerSecond = window.essenceLogic.calculateFinalityEssencePerSecond(game)

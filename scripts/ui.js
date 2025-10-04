@@ -40,6 +40,14 @@
       disabledCache.set(key, !!disabled);
       elements[index].disabled = !!disabled;
     },
+    setClassText(className, index, value) {
+      const elements = document.getElementsByClassName(className);
+      if (!elements || !elements[index]) return;
+      const key = `.${className}[${index}]`;
+      if (textCache.get(key) === value) return;
+      textCache.set(key, value);
+      elements[index].textContent = value;
+    },
     setResourceText(index, value) {
       const rows = document.getElementsByClassName('resourceText');
       if (!rows || !rows[index]) return;
