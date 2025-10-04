@@ -54,36 +54,9 @@ if (isDevVersion) {
 }
 
 //Formatting code taken from RedShark77's games
+// Extracted to scripts/utils/format.js - using wrapper for compatibility
 function format(ex, acc=2, max=9) {
-  function E(x) {return new Decimal(x)}
-  ex = E(ex)
-  neg = ex.lt(0)?"-":""
-  if (ex.mag == Infinity) return neg + 'Infinity'
-  if (Number.isNaN(ex.mag)) return neg + 'NaN'
-  //The bit I added, this rounds the mag if it's extremely close to an integer due to rounding errors during calculations
-  if (ex.layer > 0 && (ex.mag % 1) > 0.9999) ex.mag = Math.ceil(ex.mag)
-  if (ex.lt(0)) ex = ex.mul(-1)
-  if (ex.eq(0)) return ex.toFixed(acc)
-  let e = ex.log10().floor()
-  if (ex.log10().lt(Math.min(-acc,0)) && acc > 1) {
-    let e = ex.log10().ceil()
-    let m = ex.div(e.eq(-1)?E(0.1):E(10).pow(e))
-    let be = e.mul(-1).max(1).log10().gte(9)
-    return neg+(be?'':m.toFixed(2))+'e'+format(e, 0, max)
-  }
-  else if (e.lt(max)) {
-    let a = Math.max(Math.min(acc-e.toNumber(), acc), 0)
-    return neg+(a>0?ex.toFixed(a):ex.toFixed(a).replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-  }
-  else {
-    if (ex.gte("eeee10")) {
-      let slog = ex.slog()
-      return (slog.gte(1e9)?'':E(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + format(slog.floor(), 0)
-    }
-    let m = ex.div(E(10).pow(e))
-    let be = e.gte(10000)
-    return neg+(be?'':m.toFixed(2))+'e'+format(e, 0, max)
-  }
+  return window.formatUtils.format(ex, acc, max)
 }
 
 
@@ -452,9 +425,11 @@ function hardReset() {
 
 function save() {
   //console.log("saving")
-  game.lastSave = Date.now();
-  localStorage.setItem("dodecaSave", JSON.stringify(game));
-  localStorage.setItem("dodecaLastSaved", game.lastSave);
+  // Use extracted pure save logic from saveLogic.js
+  const result = window.saveLogic.saveToLocalStorage(game)
+  if (result.success) {
+    game.lastSave = result.timestamp
+  }
 }
 
 function setAutoSave() {
@@ -466,8 +441,9 @@ setAutoSave()
 
 function exportGame() {
   save()
+  // Use extracted pure encode logic from saveLogic.js
   let inputField = document.getElementById("exportField");
-  inputField.value = btoa(JSON.stringify(game));
+  inputField.value = window.saveLogic.encodeGameState(game);
   if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
     let editable = inputField.contentEditable;
     let readOnly = inputField.readOnly;
@@ -491,7 +467,8 @@ function exportGame() {
 
 function importGame() {
   //loadgame = JSON.parse(atob(prompt("Input your save here:")))
-  let loadgame = JSON.parse(atob(document.getElementById("exportField").value));
+  // Use extracted pure decode logic from saveLogic.js
+  let loadgame = window.saveLogic.decodeGameState(document.getElementById("exportField").value);
   if (loadgame && loadgame != null && loadgame != "") {
     reset()
     loadGame(loadgame)
@@ -504,7 +481,8 @@ function importGame() {
 
 function load() {
 	reset()
-	let loadgame = JSON.parse(localStorage.getItem("dodecaSave"))
+	// Use extracted pure load logic from saveLogic.js
+	let loadgame = window.saveLogic.loadFromLocalStorage()
   //loadgame.kkkgl();
 	if (loadgame != null) {loadGame(loadgame)}
   else {document.getElementById("loadingScreenCover").style.display = "none"}
@@ -2482,45 +2460,36 @@ function addUnlock(x = 1) {
   panToNewUnlock();
 }
 
-function lerp (start, end, amt){
-  return (1 - amt) * start + amt * end;
+// Extracted to scripts/utils/math.js - using wrappers for compatibility
+function lerp(start, end, amt) {
+  return window.mathUtils.lerp(start, end, amt)
 }
 
 function lerpColour(start, end, amt) {
-  let startInt = parseInt(start,16); //convert colour string to hexdecimal
-  let endInt = parseInt(end,16); //same with end colour string
-  return Math.round(lerp(startInt, endInt, amt)).toString(16) //perform standard lerp, round off the result, and convert back to hexdecimal
+  return window.mathUtils.lerpColour(start, end, amt)
 }
 
 lastTimePlayedUp = Date.now()
 function timePlayedUp() {
 	if (bigFinishPoint == 0) {
-		timePlayedDiff = (Date.now() - lastTimePlayedUp) / 1000
-		game.timePlayed += timePlayedDiff
-		timePlayedFloor = Math.floor(game.timePlayed)
-		timePlayedHours = Math.floor(timePlayedFloor / 3600)
-		timePlayedMinutes = Math.floor(timePlayedFloor / 60) % 60
-		timePlayedSeconds = timePlayedFloor % 60
-		timeString = (timePlayedHours + ":" + ((timePlayedMinutes < 10 ? '0' : '') + timePlayedMinutes) + ":" + ((timePlayedSeconds < 10 ? '0' : '') + timePlayedSeconds))
-		document.getElementById("timePlayed").textContent = timeString
-		lastTimePlayedUp = Date.now()
+		// Use extracted pure time logic from timeLogic.js
+		const result = window.timeLogic.updateTimePlayed(game, lastTimePlayedUp, false)
+		game.timePlayed = result.timePlayed
+		document.getElementById("timePlayed").textContent = result.timeString
+		lastTimePlayedUp = result.lastUpdate
 	}
 }
 
 // REMOVED: setInterval(timePlayedUp, 100) - Now handled by unified game loop
 
 function getSaveErrorCode() {
-  //error code will indicate 3 things: 
-  let _validSave = 0; //first value is whether a valid save exists in the storage.
-  let _timeMatches = 0; //second value is whether the time on this save matches the tracked time.
-  let _intervalStarted = 0; //Third value is whether autosave interval ever seemingly initialized.
-  let lastConfirmedSave = parseInt(localStorage.getItem("dodecaLastSaved"));
-  if (lastConfirmedSave > 0) _validSave = 1;
-  if (lastConfirmedSave === game.lastSave) _timeMatches = 1;
-  if (autosaveStarted) _intervalStarted = 1;
-  let errorCode = "" + _validSave + _timeMatches + _intervalStarted;
-  if (_timeMatches === 0) errorCode = errorCode + ": " + (game.lastSave - lastConfirmedSave) / 1000; // if times don't match, this appaends the number of seconds they're off by
-  return errorCode;
+  // Use extracted pure save error logic from saveLogic.js
+  const lastConfirmedSave = window.saveLogic.getLastSavedTimestamp();
+  return window.saveLogic.getSaveErrorCode({
+    lastConfirmedSave,
+    gameLastSave: game.lastSave,
+    autosaveStarted
+  });
 }
 
 function changeDragonName() {game.dragonName = document.getElementById("dragonNameBox").value}
