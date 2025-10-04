@@ -69,18 +69,18 @@ function buyFireUpgrade(x) {
     document.getElementById(costString).textContent = costText
   }
   switch (x) {
-    case 1:
-      //the effect of upgrade 1 depends on whether magic upgrade 13 has been purchased
-      let upg1eff = game.magicUpgradesBought[13] ? new Decimal(3.5).pow(game.fireUpgrade1Bought.pow(0.7)) : new Decimal(2).pow(game.fireUpgrade1Bought.pow(0.6));
-      const upg1Text = format(upg1eff, 2)
+    case 1: {
+      const upg1Text = format(window.fireLogic.calculateFireUpgrade1Effect(game), 2)
       if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade1Effect', upg1Text)
       else document.getElementById("fireUpgrade1Effect").textContent = upg1Text
       break;
-    case 6:
-      const upg6Text = format(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)), 2)
+    }
+    case 6: {
+      const upg6Text = format(window.fireLogic.calculateFireUpgrade6Effect(game), 2)
       if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade6Effect', upg6Text)
       else document.getElementById("fireUpgrade6Effect").textContent = upg6Text
       break;
+    }
   }
 }
 
@@ -159,18 +159,18 @@ function fireBuyMax(x) {
     document.getElementById(costString).textContent = costText
   }
   switch (x) {
-    case 1:
-      //the effect of upgrade 1 depends on whether magic upgrade 13 has been purchased
-      let upg1eff = game.magicUpgradesBought[13] ? new Decimal(3.5).pow(game.fireUpgrade1Bought.pow(0.7)) : new Decimal(2).pow(game.fireUpgrade1Bought.pow(0.6));
-      const upg1Text = format(upg1eff, 2)
+    case 1: {
+      const upg1Text = format(window.fireLogic.calculateFireUpgrade1Effect(game), 2)
       if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade1Effect', upg1Text)
       else document.getElementById("fireUpgrade1Effect").textContent = upg1Text
       break;
-    case 6:
-      const upg6Text = format(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)), 2)
+    }
+    case 6: {
+      const upg6Text = format(window.fireLogic.calculateFireUpgrade6Effect(game), 2)
       if (window.ui && window.ui.update) window.ui.update.setText('fireUpgrade6Effect', upg6Text)
       else document.getElementById("fireUpgrade6Effect").textContent = upg6Text
       break;
+    }
   }
 }
 

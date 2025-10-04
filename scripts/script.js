@@ -652,7 +652,7 @@ function loadGame(loadgame) {
     else {document.getElementsByClassName("platinumUpgrade")[7].disabled = false}
     if (game.platinumUpgradesBought[8] == 5) {document.getElementsByClassName("platinumUpgrade")[8].disabled = true}
     else {document.getElementsByClassName("platinumUpgrade")[8].disabled = false}
-    document.getElementById("platinumUpgrade7Effect").textContent = format(new Decimal(1.5).pow(game.platinumUpgradesBought[6]), 2)
+    document.getElementById("platinumUpgrade7Effect").textContent = format(window.platinumLogic.calculatePlatinumUpgrade7Effect(game), 2)
   }
   //Hide confirmation toggle box if importing save before magic
   if (game.unlocks < 4) document.getElementById("confirmationToggleBox").style.display = "none"
@@ -1297,32 +1297,10 @@ timeResumeSound.volume = 0.2
 
 // Helper function: Calculate and update fire per second and related UI
 function updateFire() {
-  //Fire/second formula and multipliers
-  if (game.voidMagicUpgradesBought[5]) {game.firePerSecond = game.gold}
-  else if (game.voidMagicUpgradesBought[4]) {game.firePerSecond = game.gold.pow("1e-10")}
-  else {
-    if (game.magicUpgradesBought[13]) {game.firePerSecond = new Decimal(3.5).pow(game.fireUpgrade1Bought.pow(0.7))}
-    else {game.firePerSecond = new Decimal(2).pow(game.fireUpgrade1Bought.pow(0.6))}
-    if (game.unlocks >= 2) game.firePerSecond = game.firePerSecond.mul(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1))
-    if (game.unlocks >= 3) game.firePerSecond = game.firePerSecond.mul(1 + game.platinumUpgradesBought[1] * 0.2)
-    if (game.magicUpgradesBought[2]) game.firePerSecond = game.firePerSecond.mul(55.5)
-    if (game.magicUpgradesBought[4]) game.firePerSecond = game.firePerSecond.mul(game.gold.add(1).log2().add(1))
-    if (game.dragonStage == 5) game.firePerSecond = game.firePerSecond.mul(1e15)
-    else if (game.dragonStage == 4) game.firePerSecond = game.firePerSecond.mul(1e8)
-    else if (game.dragonStage == 3) game.firePerSecond = game.firePerSecond.mul(10000)
-    else if (game.dragonStage == 2) game.firePerSecond = game.firePerSecond.mul(100)
-    if (game.dragonStage >= 5) game.firePerSecond = game.firePerSecond.pow(new Decimal(1.3).pow(game.dragonFood))
-    if (game.unlocks >= 17) game.firePerSecond = game.firePerSecond.pow(game.blueFireUpgradesBought[1].add(1).log10().div(4).add(1))
-    if (game.holyTetrahedronUpgradesBought[9]) game.firePerSecond = game.firePerSecond.pow(10000)
-    if (game.challengesActive && game.selectedChallenges[2]) {
-      if (game.magicUpgradesBought[14]) {game.firePerSecond = game.firePerSecond.pow(0.3)}
-      else {game.firePerSecond = game.firePerSecond.pow(0.1)}
-    }
-    if (game.inHell) { //Can definitely be made better using a switch
-      if (game.currentHellLayer == 2 || game.currentHellLayer == 3) game.firePerSecond = game.firePerSecond.add(1).log10()
-      else if (game.currentHellLayer >= 4) game.firePerSecond = new Decimal(0)
-    }
-  }
+  // Use extracted pure functions from fireLogic.js
+  const { calculateFirePerSecond, calculateFireGoldMultiplier } = window.fireLogic
+
+  game.firePerSecond = calculateFirePerSecond(game)
   if (window.ui && window.ui.update) {
     window.ui.update.setText('fire', format(game.fire, 0))
     window.ui.update.setText('firePerSecond', format(game.firePerSecond, 0))
@@ -1331,10 +1309,8 @@ function updateFire() {
     document.getElementById("firePerSecond").textContent = format(game.firePerSecond, 0)
   }
 
-  //Fire gold multiplier formula and multipliers
-  if (game.darkMagicUpgradesBought[5]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)))}
-  else if (game.magicUpgradesBought[8]) {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)))}
-  else {game.fireGoldMultiplier = game.fire.div(10).add(1).log10().mul(2).add(1).mul(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)))}
+  // Fire gold multiplier
+  game.fireGoldMultiplier = calculateFireGoldMultiplier(game)
   if (window.ui && window.ui.update) {
     window.ui.update.setText('fireGoldMultiplier', format(game.fireGoldMultiplier, 2))
   } else {
@@ -1377,20 +1353,11 @@ function updateFire() {
     }
 
     // Update effect text
-    let fireUpgrade2EffectValue
-    if (game.darkMagicUpgradesBought[5]) fireUpgrade2EffectValue = format(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)), 2)
-    else if (game.magicUpgradesBought[8]) fireUpgrade2EffectValue = format(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)), 2)
-    else fireUpgrade2EffectValue = format(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)), 2)
-
-    let fireUpgrade3EffectValue
-    if (game.magicUpgradesBought[8]) fireUpgrade3EffectValue = format(game.fireUpgrade3Bought.pow(12).mul(4).add(1), 2)
-    else fireUpgrade3EffectValue = format(game.fireUpgrade3Bought.pow(2.6).mul(4).add(1), 2)
-
-    let fireUpgrade4EffectValue
-    if (game.platinumUpgradesBought[8] > 0) fireUpgrade4EffectValue = format(game.fireUpgrade4Bought.pow(game.miners.pow(0.3)).pow(game.platinumUpgradesBought[8] / 4).add(1), 2)
-    else fireUpgrade4EffectValue = format(game.fireUpgrade4Bought.pow(1.5).mul(game.miners).div(50).add(1), 2)
-
-    const fireUpgrade5EffectValue = format(game.fireUpgrade5Bought.pow(1.5).mul(game.gold.add(1).log10()).div(5).add(1), 2)
+    // Compute fire upgrade effect values via pure logic
+    const fireUpgrade2EffectValue = format(window.fireLogic.calculateFireUpgrade2Effect(game), 2)
+    const fireUpgrade3EffectValue = format(window.fireLogic.calculateFireUpgrade3Effect(game), 2)
+    const fireUpgrade4EffectValue = format(window.fireLogic.calculateFireUpgrade4Effect(game), 2)
+    const fireUpgrade5EffectValue = format(window.fireLogic.calculateFireUpgrade5Effect(game), 2)
 
     if (window.ui && window.ui.update) {
       window.ui.update.setText('fireUpgrade2Effect', fireUpgrade2EffectValue)
@@ -1452,14 +1419,14 @@ function updateSmall() {
     document.getElementById("alerts").innerHTML = alertString
   }
 
-  // Calculate gold
+  // Calculate advanced resources first so dependent effects (e.g., platinumUpgrade6) are fresh
+  updateAdvancedResources()
+
+  // Calculate gold (uses platinum effects)
   updateGold()
 
   // Calculate fire
   updateFire()
-
-  // Calculate advanced resources (platinum, magic, sigils, etc.)
-  updateAdvancedResources()
 
   // Commented out auto-updates (handled elsewhere)
   //game.gold = game.gold.add(game.goldPerSecond.mul(diff));
@@ -1494,22 +1461,8 @@ function updatePlatinum() {
       if (resourceRows.length > 3) resourceRows[3].textContent = platinumFormatted
     }
 
-    //Determines the amount of platinum to get when converting gold
-    game.platinumToGet = game.gold.add(1).log2().mul(new Decimal(3).pow(game.fireUpgrade6Bought.pow(0.6)))
-    if (game.unlocks >= 7) game.platinumToGet = game.platinumToGet.mul(1.2 ** game.uraniumUpgradesBought[0])
-    if (game.unlocks >= 8) game.platinumToGet = game.platinumToGet.mul(10 ** game.uraniumUpgradesBought[4])
-    if (game.unlocks >= 11) game.platinumToGet = game.platinumToGet.mul(new Decimal(1e15).pow(game.blueSigilUpgradesBought[1].pow(0.6)))
-    if (game.holyTetrahedronUpgradesBought[4]) game.platinumToGet = game.platinumToGet.mul(1e20)
-    if (game.unlocks >= 17) game.platinumToGet = game.platinumToGet.pow(game.blueFireUpgradesBought[2].add(1).log2().add(1))
-    if (game.darkMagicUpgradesBought[12]) game.platinumToGet = game.platinumToGet.pow(666)
-    if (game.challengesActive && game.selectedChallenges[1]) game.platinumToGet = game.platinumToGet.pow(0.25)
-    if (game.inHell) { //Can definitely be made better using a switch
-      if (game.currentHellLayer == 1) game.platinumToGet = game.platinumToGet.pow(0.1)
-      else if (game.currentHellLayer == 2) game.platinumToGet = game.platinumToGet.pow(0.01)
-      else if (game.currentHellLayer == 3 || game.currentHellLayer == 4) game.platinumToGet = game.platinumToGet.add(1).log10()
-      else if (game.currentHellLayer == 5) game.platinumToGet = game.platinumToGet.add(1).log10().pow(0.5)
-    }
-    game.platinumToGet = game.platinumToGet.floor()
+    // Determined via pure logic
+    game.platinumToGet = window.platinumLogic.calculatePlatinumToGet(game)
 
     if (window.ui && window.ui.update) {
       window.ui.update.setText('platinumToGet', format(game.platinumToGet, 0))
@@ -1526,17 +1479,16 @@ function updatePlatinum() {
       document.getElementById("extraPlatinumPerSecond").textContent = extraPlatinumPerSecond
     }
 
-    if (game.uraniumUpgradesBought[3]) {platinumUpgrade6Effect = game.platinum.add(1).pow(game.platinumUpgradesBought[5] * 1.2)}
-    else {platinumUpgrade6Effect = game.platinum.add(1).log10().add(1).pow(game.platinumUpgradesBought[5] * 1.2)}
-    if (game.challengesActive && game.selectedChallenges[3]) platinumUpgrade6Effect = platinumUpgrade6Effect.div(1e25)
+    // Compute and store platinum upgrade 6 effect in state for other systems (e.g., gold)
+    game.platinumUpgrade6Effect = window.platinumLogic.calculatePlatinumUpgrade6Effect(game)
 
-    const platinumUpgrade7MaxText = game.magicUpgradesBought[10] ? "20" : "10"
+    const platinumUpgrade7MaxText = String(window.platinumLogic.getPlatinumUpgrade7Max(game))
 
     if (window.ui && window.ui.update) {
-      window.ui.update.setText('platinumUpgrade6Effect', format(platinumUpgrade6Effect, 2))
+      window.ui.update.setText('platinumUpgrade6Effect', format(game.platinumUpgrade6Effect, 2))
       window.ui.update.setText('platinumUpgrade7Max', platinumUpgrade7MaxText)
     } else {
-      document.getElementById("platinumUpgrade6Effect").textContent = format(platinumUpgrade6Effect, 2)
+      document.getElementById("platinumUpgrade6Effect").textContent = format(game.platinumUpgrade6Effect, 2)
       document.getElementById("platinumUpgrade7Max").textContent = platinumUpgrade7MaxText
     }
   }
@@ -1562,30 +1514,18 @@ function updateAdvancedResources() {
     //if (game.unlocks >= 14) game.magicToGet = game.magicToGet.mul(game.pinkSigils.add(1).pow(6))
     //if (game.darkMagicUpgradesBought[9] == true) game.magicToGet = game.magicToGet.pow(1.1)
     //if (game.darkMagicUpgradesBought[1]) game.magicToGet = game.magicToGet.pow(game.uranium.add(1).log10().div(30).add(1))
-    game.magicToGet = getMagicGain()
+    game.magicToGet = window.magicLogic.calculateMagicToGet(game)
     const magicToGetText = format(game.magicToGet, 0)
     const magicText = format(game.magic, 0)
-    const nextMagicContent = game.unlocks >= 10 ? "" : "Next magic at " + format(getNextMagicAt(), 0) + " gold<br>"
+    const nextMagicAt = window.magicLogic.calculateNextMagicAt(game)
+    const nextMagicContent = game.unlocks >= 10 ? "" : "Next magic at " + format(nextMagicAt, 0) + " gold<br>"
 
-    game.magicEffect = game.magic.mul(3).mul(new Decimal(1.5).pow(game.platinumUpgradesBought[6])).add(1)
-    if (game.magicUpgradesBought[15]) game.magicEffect = game.magicEffect.pow(2)
-    if (game.plutoniumUpgradesBought[1] > 0) game.magicEffect = game.magicEffect.pow((game.plutoniumUpgradesBought[1] * 100000) ** 0.8 + 1)
-    if (game.inHell && game.currentHellLayer >= 5) game.magicEffect = game.magicEffect.add(1).log10()
-    if (game.challengesActive && game.selectedChallenges[0]) game.magicEffect = game.magic.pow(0.2).div(1e15)
+    const magicEffectResult = window.magicLogic.calculateMagicEffect(game)
+    game.magicEffect = magicEffectResult.effect
+    const magicEffectCapText = magicEffectResult.softcapped ? " (softcapped)" : ""
 
-    const magicEffectCapText = game.magicEffect.gt("e1000") ? " (softcapped)" : ""
-    if (game.magicEffect.gt("e1000")) {
-      game.magicEffect = game.magicEffect.mul("e1000").pow(0.5)
-    }
-    if (game.magicEffect.gt("e100000")) {game.magicEffect = game.magicEffect.mul("e900000").pow(0.1)}
-
-    const magicUpgrade4EffectText = game.magicUpgradesBought[9]
-      ? format(game.magic.add(1).log2().mul(4).add(1), 2)
-      : format(game.magic.add(1).log2().mul(1.5).add(1), 2)
-
-    const magicUpgrade6EffectText = game.magicUpgradesBought[9]
-      ? format(game.miners.pow(3).add(1), 2)
-      : format(game.miners.pow(1.5).add(1), 2)
+    const magicUpgrade4EffectText = format(window.magicLogic.magicUpgrade4Effect(game), 2)
+    const magicUpgrade6EffectText = format(window.magicLogic.magicUpgrade6Effect(game), 2)
 
     if (window.ui && window.ui.update) {
       window.ui.update.setText('magicToGet', magicToGetText)
@@ -1594,10 +1534,10 @@ function updateAdvancedResources() {
       window.ui.update.setResourceText(4, magicText)
       window.ui.update.setText('magicEffectCap', magicEffectCapText)
       window.ui.update.setText('magicEffect', format(game.magicEffect, 2))
-      window.ui.update.setText('magicUpgrade1Effect', format(game.gold.add(1).log10().add(1), 2))
+      window.ui.update.setText('magicUpgrade1Effect', format(window.magicLogic.magicUpgrade1Effect(game), 2))
       window.ui.update.setText('magicUpgrade4Effect', magicUpgrade4EffectText)
       window.ui.update.setText('magicUpgrade6Effect', magicUpgrade6EffectText)
-      window.ui.update.setText('magicUpgrade5Effect', format(game.gold.add(1).log2().add(1), 2))
+      window.ui.update.setText('magicUpgrade5Effect', format(window.magicLogic.magicUpgrade5Effect(game), 2))
     } else {
       document.getElementById("magicToGet").textContent = magicToGetText
       document.getElementById("nextMagic").innerHTML = nextMagicContent
@@ -1605,10 +1545,10 @@ function updateAdvancedResources() {
       document.getElementsByClassName("resourceText")[4].textContent = magicText
       document.getElementById("magicEffectCap").textContent = magicEffectCapText
       document.getElementById("magicEffect").textContent = format(game.magicEffect, 2)
-      document.getElementById("magicUpgrade1Effect").textContent = format(game.gold.add(1).log10().add(1), 2)
+      document.getElementById("magicUpgrade1Effect").textContent = format(window.magicLogic.magicUpgrade1Effect(game), 2)
       document.getElementById("magicUpgrade4Effect").textContent = magicUpgrade4EffectText
       document.getElementById("magicUpgrade6Effect").textContent = magicUpgrade6EffectText
-      document.getElementById("magicUpgrade5Effect").textContent = format(game.gold.add(1).log2().add(1), 2)
+      document.getElementById("magicUpgrade5Effect").textContent = format(window.magicLogic.magicUpgrade5Effect(game), 2)
     }
   }
   if (game.unlocks >= 5) {
