@@ -598,9 +598,15 @@ function loadGame(loadgame) {
     document.getElementById("unlockMagicButton").style.display = "block"
     document.getElementsByClassName("box")[5].style.display = "block"
     document.getElementsByClassName("resourceRow")[3].style.display = "block"
-    document.getElementById("platinumConvertCooldown").textContent = game.platinumConvertCooldown
-    if (game.platinumConvertCooldown > 0) {document.getElementById("platinumConvertButton").disabled = true}
-    else {document.getElementById("platinumConvertButton").disabled = false}
+    // Use UI helper to keep disabled cache in sync
+    if (window.ui && window.ui.update) {
+      window.ui.update.setText('platinumConvertCooldown', game.platinumConvertCooldown)
+      window.ui.update.setDisabled('platinumConvertButton', game.platinumConvertCooldown > 0)
+    } else {
+      document.getElementById("platinumConvertCooldown").textContent = game.platinumConvertCooldown
+      if (game.platinumConvertCooldown > 0) {document.getElementById("platinumConvertButton").disabled = true}
+      else {document.getElementById("platinumConvertButton").disabled = false}
+    }
     //Ugh, this is what happens when you keep adding new platinum upgrades
     if (game.platinumUpgradesBought.length < 6) game.platinumUpgradesBought[5] = 0
     if (game.platinumUpgradesBought.length < 7) game.platinumUpgradesBought[6] = 0
@@ -2153,52 +2159,98 @@ function updateLarge() {
   if (timeStopped) return;
 	timeDivider = Math.max(1000 / (Date.now() - timeSinceLastUpdate), 0.0001)
   
-  //Adds to the user's gold
-  if (game.unlocks < 35 || game.nuclearPastaUpgradesBought[3] || (game.nuclearPastaState != 2 && game.nuclearPastaState != 5)) game.gold = game.gold.add(game.goldPerSecond.div(timeDivider))
-  //Adds to the user's fire
-  if (game.unlocks >= 1) game.fire = game.fire.add(game.firePerSecond.div(timeDivider))
+  // Use extracted pure resource accumulation logic from accumulationLogic.js
+  const accumulated = window.accumulationLogic.calculatePassiveAccumulation(game, timeDivider)
+
+  // Apply all passive resource accumulations
+  if (accumulated.gold) game.gold = accumulated.gold
+  if (accumulated.fire) game.fire = accumulated.fire
+  if (accumulated.platinum) game.platinum = accumulated.platinum
+  if (accumulated.magic) game.magic = accumulated.magic
+  if (accumulated.uranium) game.uranium = accumulated.uranium
+  if (accumulated.cyanSigilPower) game.cyanSigilPower = accumulated.cyanSigilPower
+  if (accumulated.blueSigilPower) game.blueSigilPower = accumulated.blueSigilPower
+  if (accumulated.indigoSigilPower) game.indigoSigilPower = accumulated.indigoSigilPower
+  if (accumulated.violetSigilPower) game.violetSigilPower = accumulated.violetSigilPower
+  if (accumulated.pinkSigilPower) game.pinkSigilPower = accumulated.pinkSigilPower
+  if (accumulated.blueFire) game.blueFire = accumulated.blueFire
+  if (accumulated.blood) game.blood = accumulated.blood
+  if (accumulated.plutonium) game.plutonium = accumulated.plutonium
+  if (accumulated.redSigilPower) game.redSigilPower = accumulated.redSigilPower
+  if (accumulated.orangeSigilPower) game.orangeSigilPower = accumulated.orangeSigilPower
+  if (accumulated.yellowSigilPower) game.yellowSigilPower = accumulated.yellowSigilPower
+  if (accumulated.holyFire) game.holyFire = accumulated.holyFire
+  if (accumulated.holyTetrahedrons) game.holyTetrahedrons = accumulated.holyTetrahedrons
+  if (accumulated.cosmicPlague) game.cosmicPlague = accumulated.cosmicPlague
+  if (accumulated.lightEssence) game.lightEssence = accumulated.lightEssence
+  if (accumulated.darkEssence) game.darkEssence = accumulated.darkEssence
+  if (accumulated.deathEssence) game.deathEssence = accumulated.deathEssence
+  if (accumulated.finalityEssence) game.finalityEssence = accumulated.finalityEssence
+  if (accumulated.oganesson) game.oganesson = accumulated.oganesson
+  if (accumulated.cyanSigils) game.cyanSigils = accumulated.cyanSigils
+  if (accumulated.blueSigils) game.blueSigils = accumulated.blueSigils
+  if (accumulated.indigoSigils) game.indigoSigils = accumulated.indigoSigils
+  if (accumulated.violetSigils) game.violetSigils = accumulated.violetSigils
+  if (accumulated.pinkSigils) game.pinkSigils = accumulated.pinkSigils
+  if (accumulated.redSigils) game.redSigils = accumulated.redSigils
+  if (accumulated.orangeSigils) game.orangeSigils = accumulated.orangeSigils
+  if (accumulated.yellowSigils) game.yellowSigils = accumulated.yellowSigils
+  if (accumulated.holyOctahedrons) game.holyOctahedrons = accumulated.holyOctahedrons
+  if (accumulated.holyDodecahedrons) game.holyDodecahedrons = accumulated.holyDodecahedrons
+
   //Auto maxes all if the upgrade is bought
   if (game.unlockedAchievements[6] > 2 && game.fireAutoMaxAll) fireMaxAll()
   
-  //Handles the platinum convert button cooldown
-  if (game.platinumConvertCooldown > 0) {
-    game.platinumConvertCooldown -= 0.5
-    const cooldownText = format(game.platinumConvertCooldown, 0)
+  // Use extracted pure cooldown logic from cooldownLogic.js
+  const cooldowns = window.cooldownLogic.updateAllCooldowns(game, 0.5)
+
+  // Platinum cooldown
+  game.platinumConvertCooldown = cooldowns.platinum.cooldown
+  const platinumCooldownText = format(cooldowns.platinum.cooldown, 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('platinumConvertCooldown', platinumCooldownText)
+  } else {
+    document.getElementById("platinumConvertCooldown").textContent = platinumCooldownText
+  }
+  if (cooldowns.platinum.justReachedZero) {
     if (window.ui && window.ui.update) {
-      window.ui.update.setText('platinumConvertCooldown', cooldownText)
-      if (game.platinumConvertCooldown == 0) window.ui.update.setDisabled('platinumConvertButton', false)
+      window.ui.update.setDisabled('platinumConvertButton', false)
     } else {
-      document.getElementById("platinumConvertCooldown").textContent = cooldownText
-      if (game.platinumConvertCooldown == 0) document.getElementById("platinumConvertButton").disabled = false
+      document.getElementById("platinumConvertButton").disabled = false
     }
   }
   if (game.platinumUpgradesBought[4] == 1) game.platinum = game.platinum.add(game.platinumToGet.div(timeDivider))
   if (game.unlocks >= 3) game.platinum = game.platinum.add(Decimal.max(game.bestPlatinumToGet.div(20), 2))
-  
-  //Handles the uranium convert button cooldown
-  if (game.uraniumConvertCooldown > 0) {
-    game.uraniumConvertCooldown -= 0.5
-    const cooldownText = format(game.uraniumConvertCooldown, 0)
+
+  // Uranium cooldown
+  game.uraniumConvertCooldown = cooldowns.uranium.cooldown
+  const uraniumCooldownText = format(cooldowns.uranium.cooldown, 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('uraniumConvertCooldown', uraniumCooldownText)
+  } else {
+    document.getElementById("uraniumConvertCooldown").textContent = uraniumCooldownText
+  }
+  if (cooldowns.uranium.justReachedZero) {
     if (window.ui && window.ui.update) {
-      window.ui.update.setText('uraniumConvertCooldown', cooldownText)
-      if (game.uraniumConvertCooldown == 0) window.ui.update.setDisabled('uraniumConvertButton', false)
+      window.ui.update.setDisabled('uraniumConvertButton', false)
     } else {
-      document.getElementById("uraniumConvertCooldown").textContent = cooldownText
-      if (game.uraniumConvertCooldown == 0) document.getElementById("uraniumConvertButton").disabled = false
+      document.getElementById("uraniumConvertButton").disabled = false
     }
   }
-  if (game.unlocks >= 7) game.uranium = game.uranium.add(Decimal.max(game.bestUraniumToGet.div(20), 1))
-  
-  //Handles the dragon time spending cooldown
-  if (game.dragonTimeCooldown > 0) {
-    game.dragonTimeCooldown -= 0.5
-    const cooldownText = format(game.dragonTimeCooldown, 0)
+
+  // Dragon cooldown
+  game.dragonTimeCooldown = cooldowns.dragon.cooldown
+  const dragonCooldownText = format(cooldowns.dragon.cooldown, 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('dragonTimeCooldown', dragonCooldownText)
+  } else {
+    document.getElementById("dragonTimeCooldown").textContent = dragonCooldownText
+  }
+  if (cooldowns.dragon.justReachedZero) {
     if (window.ui && window.ui.update) {
-      window.ui.update.setText('dragonTimeCooldown', cooldownText)
-      if (game.dragonTimeCooldown == 0) window.ui.update.setDisabled('dragonSpendTimeButton', false)
+      window.ui.update.setDisabled('dragonSpendTimeButton', false)
     } else {
-      document.getElementById("dragonTimeCooldown").textContent = cooldownText
-      if (game.dragonTimeCooldown == 0) document.getElementById("dragonSpendTimeButton").disabled = false
+      document.getElementById("dragonSpendTimeButton").disabled = false
     }
   }
   if (game.unlockedAchievements[6] > 0) {
@@ -2208,22 +2260,23 @@ function updateLarge() {
     dragonFeed();
   }
 
-  //Handles the plutonium convert button cooldown
-  if (game.plutoniumConvertCooldown > 0) {
-    game.plutoniumConvertCooldown -= 0.5
-    const cooldownText = format(game.plutoniumConvertCooldown, 0)
+  // Plutonium cooldown
+  game.plutoniumConvertCooldown = cooldowns.plutonium.cooldown
+  const plutoniumCooldownText = format(cooldowns.plutonium.cooldown, 0)
+  if (window.ui && window.ui.update) {
+    window.ui.update.setText('plutoniumConvertCooldown', plutoniumCooldownText)
+  } else {
+    document.getElementById("plutoniumConvertCooldown").textContent = plutoniumCooldownText
+  }
+  if (cooldowns.plutonium.justReachedZero) {
     if (window.ui && window.ui.update) {
-      window.ui.update.setText('plutoniumConvertCooldown', cooldownText)
-      if (game.plutoniumConvertCooldown == 0) window.ui.update.setDisabled('plutoniumConvertButton', false)
+      window.ui.update.setDisabled('plutoniumConvertButton', false)
     } else {
-      document.getElementById("plutoniumConvertCooldown").textContent = cooldownText
-      if (game.plutoniumConvertCooldown == 0) document.getElementById("plutoniumConvertButton").disabled = false
+      document.getElementById("plutoniumConvertButton").disabled = false
     }
   }
-  if (game.unlocks >= 20) game.plutonium = game.plutonium.add(Decimal.max(game.bestPlutoniumToGet.div(20), 0))
-  
-  if (game.unlockedAchievements[3] > 7) {game.magic = game.magic.add(game.magicToGet.div(timeDivider))}
-  else if (game.unlockedAchievements[3] > 5) {game.magic = game.magic.add(game.magicToGet.div(100))}
+
+  // Magic hardcap check (not part of accumulation logic)
   magicHardcap = new Decimal("e5000000")
   if (game.tomeUpgradesBought[8] == true) magicHardcap = magicHardcap.pow(game.blueFireUpgradesBought[3].pow(0.7).mul(5).add(1))
   if (game.magic.gt(magicHardcap)) {
@@ -2235,59 +2288,16 @@ function updateLarge() {
     if (window.ui && window.ui.update) window.ui.update.setText('magicCap', '')
     else document.getElementById("magicCap").textContent = ""
   }
-  if (game.unlocks >= 10) game.cyanSigilPower = game.cyanSigilPower.add(game.cyanSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 11) game.blueSigilPower = game.blueSigilPower.add(game.blueSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 12) game.indigoSigilPower = game.indigoSigilPower.add(game.indigoSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 13) game.violetSigilPower = game.violetSigilPower.add(game.violetSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 14) game.pinkSigilPower = game.pinkSigilPower.add(game.pinkSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 17) game.blueFire = game.blueFire.add(game.blueFirePerSecond.div(timeDivider))
-  if (game.unlocks >= 18) game.blood = game.blood.add(game.bloodPerSecond.div(timeDivider))
-  if (game.unlocks >= 21) game.redSigilPower = game.redSigilPower.add(game.redSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 22) game.orangeSigilPower = game.orangeSigilPower.add(game.orangeSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 23) game.yellowSigilPower = game.yellowSigilPower.add(game.yellowSigilPowerPerSecond.div(timeDivider))
-  if (game.unlocks >= 26 && game.holyTetrahedronUpgradesBought[11]) game.holyFire = game.holyFire.add(game.holyFirePerSecond.div(timeDivider))
-  if (game.holyOctahedronUpgradesBought[4]) game.holyTetrahedrons = game.holyTetrahedrons.add(0.5)
-	if (game.unlocks >= 31) game.cosmicPlague = game.cosmicPlague.add(game.cosmicPlaguePerSecond.div(timeDivider))
-	if (game.unlocks >= 33) {
-		game.lightEssence = game.lightEssence.add(game.lightEssencePerSecond.div(timeDivider))
-		game.darkEssence = game.darkEssence.add(game.darkEssencePerSecond.div(timeDivider))
-	}
-	if (game.unlocks >= 34) game.deathEssence = game.deathEssence.add(game.deathEssencePerSecond.div(timeDivider))
-	if (game.unlocks >= 36) game.finalityEssence = game.finalityEssence.add(game.finalityEssencePerSecond.div(timeDivider))
-
-  if (game.unlockedAchievements[5] > 3) game.uranium = game.uranium.add(game.uraniumToGet.div(timeDivider))
-  if (game.unlockedAchievements[15] > 3) game.plutonium = game.plutonium.add(game.plutoniumToGet.div(timeDivider))
-	game.oganesson = game.oganesson.add(game.oganessonPerSecond.div(timeDivider))
   if (game.unlockedAchievements[0] > 8 && game.minerAutoBuyMax) buyMaxMiners()
-  if (game.unlockedAchievements[13] > 0) {
-    game.cyanSigils = game.cyanSigils.add(game.cyanSigilsToGet.div(20))
-    game.blueSigils = game.blueSigils.add(game.blueSigilsToGet.div(20))
-    game.indigoSigils = game.indigoSigils.add(game.indigoSigilsToGet.div(20))
-    game.violetSigils = game.violetSigils.add(game.violetSigilsToGet.div(20))
-    game.pinkSigils = game.pinkSigils.add(game.pinkSigilsToGet.div(20))
+
+  // Use extracted pure knowledge reward logic from knowledgeLogic.js
+  const knowledgeResult = window.knowledgeLogic.calculateKnowledgeReward(game)
+  if (knowledgeResult.knowledgeReward.gt(0)) {
+    const appliedKnowledge = window.knowledgeLogic.applyKnowledgeReward(game, knowledgeResult.knowledgeReward)
+    game.knowledge = appliedKnowledge.knowledge
+    game.highestKnowledge = appliedKnowledge.highestKnowledge
   }
-  if (game.unlockedAchievements[15] > 0) {
-    idealTradeLevel = (game.cyanSigils.div(500000)).log10().div(0.178)
-    knowledgeRewardTemp = new Decimal(1.5).pow(idealTradeLevel.sub(1))
-    knowledgeRewardTemp = knowledgeRewardTemp.mul(new Decimal(2).pow(game.knowledgeUpgradesBought[0].pow(0.5)))
-    if (game.tomeUpgradesBought[2] == true) knowledgeRewardTemp = knowledgeRewardTemp.mul(2)
-    if (game.tomeUpgradesBought[6] == true) knowledgeRewardTemp = knowledgeRewardTemp.mul(game.totalTomes.pow(1.2).add(1))
-    if (game.tomeUpgradesBought[8] == true) knowledgeRewardTemp = knowledgeRewardTemp.mul(new Decimal(1000).pow(game.blueFireUpgradesBought[5].pow(0.6)))
-    if (game.holyTetrahedronUpgradesBought[7]) knowledgeRewardTemp = knowledgeRewardTemp.mul(1e150)
-    if (game.holyOctahedronUpgradesBought[8]) knowledgeRewardTemp = knowledgeRewardTemp.mul("e550")
-		if (game.voidMagicUpgradesBought[11] == true) knowledgeRewardTemp = knowledgeRewardTemp.mul("e12000")
-		if (game.unlocks >= 33 && game.darkEssenceUpgradesBought[2].gt(0)) knowledgeRewardTemp = knowledgeRewardTemp.mul(new Decimal(10).pow(new Decimal(2).pow(game.darkEssenceUpgradesBought[2].pow(0.5)).mul(5e9)))
-    knowledgeRewardTemp = knowledgeRewardTemp.div(2).floor()
-    game.knowledge = game.knowledge.add(knowledgeRewardTemp)
-    if (game.knowledge.gte(game.highestKnowledge)) game.highestKnowledge = game.knowledge
-    document.getElementById("knowledgePerSecond").textContent = " (" + format(knowledgeRewardTemp, 0) + "/s)"
-  }
-  else {document.getElementById("knowledgePerSecond").textContent = ""}
-	if (game.unlockedAchievements[23] > 2) {
-    game.redSigils = game.redSigils.add(game.redSigilsToGet.div(timeDivider))
-    game.orangeSigils = game.orangeSigils.add(game.orangeSigilsToGet.div(timeDivider))
-    game.yellowSigils = game.yellowSigils.add(game.yellowSigilsToGet.div(timeDivider))
-  }
+  document.getElementById("knowledgePerSecond").textContent = knowledgeResult.knowledgePerSecond
 
   if (game.unlockedAchievements[13] > 4 && game.blueFireAutoMaxAll) blueFireMaxAll()
   if (game.unlockedAchievements[11] > 7 && game.knowledgeAutoMaxAll) knowledgeMaxAll()

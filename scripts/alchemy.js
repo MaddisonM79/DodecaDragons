@@ -16,8 +16,14 @@ function platinumConvert() {
     game.platinum = game.platinum.add(game.platinumToGet)
     game.gold = new Decimal(0)
     game.platinumConvertCooldown = 3
-    document.getElementById("platinumConvertButton").disabled = true
-    document.getElementById("platinumConvertCooldown").innerHTML = game.platinumConvertCooldown
+    // Keep UI cache in sync when disabling and updating text
+    if (window.ui && window.ui.update) {
+      window.ui.update.setDisabled('platinumConvertButton', true)
+      window.ui.update.setText('platinumConvertCooldown', game.platinumConvertCooldown)
+    } else {
+      document.getElementById("platinumConvertButton").disabled = true
+      document.getElementById("platinumConvertCooldown").innerHTML = game.platinumConvertCooldown
+    }
   }
 }
 
