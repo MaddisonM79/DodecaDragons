@@ -1801,10 +1801,16 @@ function updateAdvancedResources() {
       document.getElementById("blueFirePerSecond").textContent = format(game.blueFirePerSecond, 0)
       document.getElementsByClassName("resourceText")[14].textContent = format(game.blueFire, 0)
     }
-    //Enables/disables blue fire upgrade buttons based on whether the user's blue fire is higher than the cost
-    for (i=0;i<6;i++) {
-      if (game.blueFire.gte(game.blueFireUpgradeCosts[i])) {document.getElementsByClassName("blueFireUpgrade")[i].disabled = false}
-      else {document.getElementsByClassName("blueFireUpgrade")[i].disabled = true}
+    // Enables/disables blue fire upgrade buttons using cached UI helper
+    if (window.ui && window.ui.update) {
+      for (i=0;i<6;i++) {
+        window.ui.update.setClassDisabled('blueFireUpgrade', i, !game.blueFire.gte(game.blueFireUpgradeCosts[i]))
+      }
+    } else {
+      for (i=0;i<6;i++) {
+        if (game.blueFire.gte(game.blueFireUpgradeCosts[i])) {document.getElementsByClassName("blueFireUpgrade")[i].disabled = false}
+        else {document.getElementsByClassName("blueFireUpgrade")[i].disabled = true}
+      }
     }
     document.getElementById("blueFireUpgrade1Effect").textContent = format(window.blueFireLogic.upg1Effect(game), 2)
     document.getElementById("blueFireUpgrade2Effect").textContent = format(window.blueFireLogic.upg2Effect(game), 3)
@@ -1965,86 +1971,187 @@ function updateAdvancedResources() {
   if (game.unlocks >= 24) {
     const tet = window.holyPolyLogic.calculateHolyTetrahedronsToGet(game)
     game.holyTetrahedronsToGet = tet.toGet
-    document.getElementById("holyTetrahedrons").textContent = format(game.holyTetrahedrons, 0)
-    document.getElementsByClassName("resourceText")[20].textContent = format(game.holyTetrahedrons, 0)
-    document.getElementById("holyTetrahedronsToGet").textContent = format(game.holyTetrahedronsToGet, 0)
-    document.getElementById("nextHolyTetrahedron").textContent = tet.nextAt ? ("Next at " + format(tet.nextAt, 0) + " gold") : ""
+    const tetraText = format(game.holyTetrahedrons, 0)
+    const nextTetraText = tet.nextAt ? ("Next at " + format(tet.nextAt, 0) + " gold") : ""
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        holyTetrahedrons: tetraText,
+        holyTetrahedronsToGet: format(game.holyTetrahedronsToGet, 0),
+        nextHolyTetrahedron: nextTetraText
+      })
+      window.ui.update.setResourceText(20, tetraText)
+    } else {
+      document.getElementById("holyTetrahedrons").textContent = tetraText
+      document.getElementsByClassName("resourceText")[20].textContent = tetraText
+      document.getElementById("holyTetrahedronsToGet").textContent = format(game.holyTetrahedronsToGet, 0)
+      document.getElementById("nextHolyTetrahedron").textContent = nextTetraText
+    }
   }
   if (game.unlocks >= 25) {
     const oct = window.holyPolyLogic.calculateHolyOctahedronsToGet(game)
     game.holyOctahedronsToGet = oct.toGet
-    document.getElementById("holyOctahedrons").textContent = format(game.holyOctahedrons, 0)
-    document.getElementsByClassName("resourceText")[21].textContent = format(game.holyOctahedrons, 0)
-    document.getElementById("holyOctahedronsToGet").textContent = format(game.holyOctahedronsToGet, 0)
-    document.getElementById("nextHolyOctahedron").textContent = oct.nextAt ? ("Next at " + format(oct.nextAt, 0) + " gold") : ""
+    const octaText = format(game.holyOctahedrons, 0)
+    const nextOctaText = oct.nextAt ? ("Next at " + format(oct.nextAt, 0) + " gold") : ""
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        holyOctahedrons: octaText,
+        holyOctahedronsToGet: format(game.holyOctahedronsToGet, 0),
+        nextHolyOctahedron: nextOctaText
+      })
+      window.ui.update.setResourceText(21, octaText)
+    } else {
+      document.getElementById("holyOctahedrons").textContent = octaText
+      document.getElementsByClassName("resourceText")[21].textContent = octaText
+      document.getElementById("holyOctahedronsToGet").textContent = format(game.holyOctahedronsToGet, 0)
+      document.getElementById("nextHolyOctahedron").textContent = nextOctaText
+    }
   }
   if (game.unlocks >= 26) {
     game.holyFirePerSecond = window.holyFireLogic.calculateHolyFirePerSecond(game)
-    document.getElementById("holyFire").textContent = format(game.holyFire, 0)
-    document.getElementById("holyFirePerSecond").textContent = format(game.holyFirePerSecond, 0)
-    document.getElementsByClassName("resourceText")[22].textContent = format(game.holyFire, 0)
-    //Enables/disables holy fire upgrade buttons based on whether the user's holy fire is higher than the cost
-    for (i=0;i<6;i++) {
-      if (game.holyFire.gte(game.holyFireUpgradeCosts[i])) {document.getElementsByClassName("holyFireUpgrade")[i].disabled = false}
-      else {document.getElementsByClassName("holyFireUpgrade")[i].disabled = true}
+    const holyFireText = format(game.holyFire, 0)
+    const holyFirePerText = format(game.holyFirePerSecond, 0)
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        holyFire: holyFireText,
+        holyFirePerSecond: holyFirePerText
+      })
+      window.ui.update.setResourceText(22, holyFireText)
+      // Enable/disable buttons using cached helper
+      for (i=0;i<6;i++) {
+        window.ui.update.setClassDisabled('holyFireUpgrade', i, !game.holyFire.gte(game.holyFireUpgradeCosts[i]))
+      }
+      // Effects
+      window.ui.update.setText('holyFireUpgrade1Effect', format(window.holyFireLogic.upg1Effect(game), 2))
+      const hf2 = window.holyFireLogic.upg2Effect(game)
+      window.ui.update.setText('holyFireUpgrade2Effect', format(hf2.eff, 2))
+      window.ui.update.setText('holyFireEffect2Softcap', hf2.status === 'softcapped' ? ' (softcapped)' : (hf2.status === 'hardcapped' ? ' (hardcapped)' : ''))
+      window.ui.update.setText('holyFireUpgrade3Effect', format(window.holyFireLogic.upg3Effect(game), 2))
+      window.ui.update.setText('holyFireUpgrade4Effect', format(window.holyFireLogic.upg4Effect(game), 2))
+      window.ui.update.setText('holyFireUpgrade5Effect', format(window.holyFireLogic.upg5Effect(game), 2))
+      const hf6 = window.holyFireLogic.upg6Effect(game)
+      window.ui.update.setText('holyFireUpgrade6Effect', format(hf6.eff, 2))
+      window.ui.update.setText('holyFireEffect6Softcap', hf6.status === 'softcapped' ? ' (softcapped)' : (hf6.status === 'hardcapped' ? ' (hardcapped)' : ''))
+    } else {
+      document.getElementById("holyFire").textContent = holyFireText
+      document.getElementById("holyFirePerSecond").textContent = holyFirePerText
+      document.getElementsByClassName("resourceText")[22].textContent = holyFireText
+      for (i=0;i<6;i++) {
+        if (game.holyFire.gte(game.holyFireUpgradeCosts[i])) {document.getElementsByClassName("holyFireUpgrade")[i].disabled = false}
+        else {document.getElementsByClassName("holyFireUpgrade")[i].disabled = true}
+      }
+      document.getElementById("holyFireUpgrade1Effect").textContent = format(window.holyFireLogic.upg1Effect(game), 2)
+      const hf2 = window.holyFireLogic.upg2Effect(game)
+      document.getElementById("holyFireUpgrade2Effect").textContent = format(hf2.eff, 2)
+      document.getElementById("holyFireEffect2Softcap").textContent = hf2.status === 'softcapped' ? ' (softcapped)' : (hf2.status === 'hardcapped' ? ' (hardcapped)' : '')
+      document.getElementById("holyFireUpgrade3Effect").textContent = format(window.holyFireLogic.upg3Effect(game), 2)
+      document.getElementById("holyFireUpgrade4Effect").textContent = format(window.holyFireLogic.upg4Effect(game), 2)
+      document.getElementById("holyFireUpgrade5Effect").textContent = format(window.holyFireLogic.upg5Effect(game), 2)
+      const hf6 = window.holyFireLogic.upg6Effect(game)
+      document.getElementById("holyFireUpgrade6Effect").textContent = format(hf6.eff, 2)
+      document.getElementById("holyFireEffect6Softcap").textContent = hf6.status === 'softcapped' ? ' (softcapped)' : (hf6.status === 'hardcapped' ? ' (hardcapped)' : '')
     }
-    document.getElementById("holyFireUpgrade1Effect").textContent = format(window.holyFireLogic.upg1Effect(game), 2)
-		const hf2 = window.holyFireLogic.upg2Effect(game)
-		document.getElementById("holyFireUpgrade2Effect").textContent = format(hf2.eff, 2)
-		document.getElementById("holyFireEffect2Softcap").textContent = hf2.status === 'softcapped' ? ' (softcapped)' : (hf2.status === 'hardcapped' ? ' (hardcapped)' : '')
-    document.getElementById("holyFireUpgrade3Effect").textContent = format(window.holyFireLogic.upg3Effect(game), 2)
-    document.getElementById("holyFireUpgrade4Effect").textContent = format(window.holyFireLogic.upg4Effect(game), 2)
-    document.getElementById("holyFireUpgrade5Effect").textContent = format(window.holyFireLogic.upg5Effect(game), 2)
-		const hf6 = window.holyFireLogic.upg6Effect(game)
-		document.getElementById("holyFireUpgrade6Effect").textContent = format(hf6.eff, 2)
-		document.getElementById("holyFireEffect6Softcap").textContent = hf6.status === 'softcapped' ? ' (softcapped)' : (hf6.status === 'hardcapped' ? ' (hardcapped)' : '')
   }
   if (game.unlocks >= 28) {
     const dod = window.holyPolyLogic.calculateHolyDodecahedronsToGet(game)
     game.holyDodecahedronsToGet = dod.toGet
-    document.getElementById("holyDodecahedrons").textContent = format(game.holyDodecahedrons, 0)
-    document.getElementsByClassName("resourceText")[23].textContent = format(game.holyDodecahedrons, 0)
-    document.getElementById("holyDodecahedronsToGet").textContent = format(game.holyDodecahedronsToGet, 0)
-    document.getElementById("nextHolyDodecahedron").textContent = dod.nextAt ? ("Next at " + format(dod.nextAt, 0) + " gold") : ""
+    const dodeText = format(game.holyDodecahedrons, 0)
+    const nextDodeText = dod.nextAt ? ("Next at " + format(dod.nextAt, 0) + " gold") : ""
+    if (window.ui && window.ui.update) {
+      window.ui.update.batchSetText({
+        holyDodecahedrons: dodeText,
+        holyDodecahedronsToGet: format(game.holyDodecahedronsToGet, 0),
+        nextHolyDodecahedron: nextDodeText
+      })
+      window.ui.update.setResourceText(23, dodeText)
+    } else {
+      document.getElementById("holyDodecahedrons").textContent = dodeText
+      document.getElementsByClassName("resourceText")[23].textContent = dodeText
+      document.getElementById("holyDodecahedronsToGet").textContent = format(game.holyDodecahedronsToGet, 0)
+      document.getElementById("nextHolyDodecahedron").textContent = nextDodeText
+    }
   }
   if (game.unlocks >= 29) {
 		const pe = window.planetsLogic.calculatePlanetEffect(game)
 		game.planetEffect = pe.effect
-		document.getElementById("planetEffectSoftcap").textContent = pe.status === 'softcapped' ? ' (softcapped)' : ''
-		document.getElementById("planets").textContent = format(game.planets, 0)
-		document.getElementById("planetEffect").textContent = format(game.planetEffect, 2)
-		document.getElementsByClassName("resourceText")[24].textContent = format(game.planets, 0)
-		for (let i=0;i<3;i++) document.getElementsByClassName("planetCost")[i].textContent = format(game.planetCosts[i], 0)
-		document.getElementById("superclusters").textContent = format(game.superclusters, 0)
-		document.getElementById("superclusterCost").textContent = format(game.superclusterCost, 0)
+		const planetsText = format(game.planets, 0)
 		const superclusterEffectText = pe.superclusterTerm
-		document.getElementById("superclusterEffect").textContent = format(superclusterEffectText, 2)
-	}
+		if (window.ui && window.ui.update) {
+			window.ui.update.setText('planetEffectSoftcap', pe.status === 'softcapped' ? ' (softcapped)' : '')
+			window.ui.update.setText('planets', planetsText)
+			window.ui.update.setText('planetEffect', format(game.planetEffect, 2))
+			window.ui.update.setResourceText(24, planetsText)
+			for (let i=0;i<3;i++) window.ui.update.setClassText('planetCost', i, format(game.planetCosts[i], 0))
+			window.ui.update.setText('superclusters', format(game.superclusters, 0))
+			window.ui.update.setText('superclusterCost', format(game.superclusterCost, 0))
+			window.ui.update.setText('superclusterEffect', format(superclusterEffectText, 2))
+		} else {
+			document.getElementById("planetEffectSoftcap").textContent = pe.status === 'softcapped' ? ' (softcapped)' : ''
+			document.getElementById("planets").textContent = planetsText
+			document.getElementById("planetEffect").textContent = format(game.planetEffect, 2)
+			document.getElementsByClassName("resourceText")[24].textContent = planetsText
+			for (let i=0;i<3;i++) document.getElementsByClassName("planetCost")[i].textContent = format(game.planetCosts[i], 0)
+			document.getElementById("superclusters").textContent = format(game.superclusters, 0)
+			document.getElementById("superclusterCost").textContent = format(game.superclusterCost, 0)
+			document.getElementById("superclusterEffect").textContent = format(superclusterEffectText, 2)
+		}
+  }
   if (game.unlocks >= 31) {
     game.cosmicPlaguePerSecond = window.plagueLogic.calculateCosmicPlaguePerSecond(game)
-		document.getElementById("cosmicPlague").textContent = format(game.cosmicPlague, 0)
-		document.getElementsByClassName("resourceText")[25].textContent = format(game.cosmicPlague, 0)
-		document.getElementById("cosmicPlaguePerSecond").textContent = format(game.cosmicPlaguePerSecond, 0)
-		document.getElementById("spores").textContent = format(game.spores, 0)
-		document.getElementById("sporeCost").textContent = format(game.sporeCost, 0)
-		for (let i=0;i<5;i++) document.getElementsByClassName("plagueUpgradeCost")[i].textContent = format(game.plagueUpgradeCosts[i], 0)
-    document.getElementsByClassName("plagueUpgradeEffect")[0].textContent = format(window.plagueLogic.upg1Effect(game), 2)
-    document.getElementsByClassName("plagueUpgradeEffect")[1].textContent = format(window.plagueLogic.upg2Effect(game), 2)
-    document.getElementsByClassName("plagueUpgradeEffect")[2].textContent = format(window.plagueLogic.upg3Effect(game), 2)
-    document.getElementsByClassName("plagueUpgradeEffect")[3].textContent = format(window.plagueLogic.upg4Effect(game), 3)
-    document.getElementsByClassName("plagueUpgradeEffect")[4].textContent = format(window.plagueLogic.upg5Effect(game), 2)
+		const plagueText = format(game.cosmicPlague, 0)
+		if (window.ui && window.ui.update) {
+			window.ui.update.batchSetText({
+				cosmicPlague: plagueText,
+				cosmicPlaguePerSecond: format(game.cosmicPlaguePerSecond, 0),
+				spores: format(game.spores, 0),
+				sporeCost: format(game.sporeCost, 0)
+			})
+			window.ui.update.setResourceText(25, plagueText)
+			for (let i=0;i<5;i++) window.ui.update.setClassText('plagueUpgradeCost', i, format(game.plagueUpgradeCosts[i], 0))
+      window.ui.update.setClassText('plagueUpgradeEffect', 0, format(window.plagueLogic.upg1Effect(game), 2))
+      window.ui.update.setClassText('plagueUpgradeEffect', 1, format(window.plagueLogic.upg2Effect(game), 2))
+      window.ui.update.setClassText('plagueUpgradeEffect', 2, format(window.plagueLogic.upg3Effect(game), 2))
+      window.ui.update.setClassText('plagueUpgradeEffect', 3, format(window.plagueLogic.upg4Effect(game), 3))
+      window.ui.update.setClassText('plagueUpgradeEffect', 4, format(window.plagueLogic.upg5Effect(game), 2))
+		} else {
+			document.getElementById("cosmicPlague").textContent = plagueText
+			document.getElementsByClassName("resourceText")[25].textContent = plagueText
+			document.getElementById("cosmicPlaguePerSecond").textContent = format(game.cosmicPlaguePerSecond, 0)
+			document.getElementById("spores").textContent = format(game.spores, 0)
+			document.getElementById("sporeCost").textContent = format(game.sporeCost, 0)
+			for (let i=0;i<5;i++) document.getElementsByClassName("plagueUpgradeCost")[i].textContent = format(game.plagueUpgradeCosts[i], 0)
+      document.getElementsByClassName("plagueUpgradeEffect")[0].textContent = format(window.plagueLogic.upg1Effect(game), 2)
+      document.getElementsByClassName("plagueUpgradeEffect")[1].textContent = format(window.plagueLogic.upg2Effect(game), 2)
+      document.getElementsByClassName("plagueUpgradeEffect")[2].textContent = format(window.plagueLogic.upg3Effect(game), 2)
+      document.getElementsByClassName("plagueUpgradeEffect")[3].textContent = format(window.plagueLogic.upg4Effect(game), 3)
+      document.getElementsByClassName("plagueUpgradeEffect")[4].textContent = format(window.plagueLogic.upg5Effect(game), 2)
+		}
   }
   if (game.unlocks >= 32) {
     game.oganessonPerSecond = window.oganessonLogic.calculateOganessonPerSecond(game)
-		document.getElementById("oganesson").textContent = format(game.oganesson, 0)
-		document.getElementsByClassName("resourceText")[26].textContent = format(game.oganesson, 0)
-		document.getElementById("oganessonPerSecond").textContent = format(game.oganessonPerSecond, 0)
-    document.getElementById("oganessonUpgrade1Effect").textContent = format(window.oganessonLogic.upg1Effect(game), 2)
-    document.getElementById("oganessonUpgrade2Effect").textContent = format(window.oganessonLogic.upg2Effect(game), 2)
-    document.getElementById("oganessonUpgrade3Effect").textContent = format(window.oganessonLogic.upg3Effect(game), 2)
-    document.getElementById("oganessonUpgrade5Effect").textContent = format(window.oganessonLogic.upg5Effect(game), 2)
-    document.getElementById("oganessonUpgrade6Effect").textContent = format(window.oganessonLogic.upg6Effect(game), 2)
-    document.getElementById("oganessonUpgrade7Effect").textContent = format(window.oganessonLogic.upg7Effect(game), 2)
+		const ogaText = format(game.oganesson, 0)
+		if (window.ui && window.ui.update) {
+			window.ui.update.batchSetText({
+				oganesson: ogaText,
+				oganessonPerSecond: format(game.oganessonPerSecond, 0),
+				oganessonUpgrade1Effect: format(window.oganessonLogic.upg1Effect(game), 2),
+				oganessonUpgrade2Effect: format(window.oganessonLogic.upg2Effect(game), 2),
+				oganessonUpgrade3Effect: format(window.oganessonLogic.upg3Effect(game), 2),
+				oganessonUpgrade5Effect: format(window.oganessonLogic.upg5Effect(game), 2),
+				oganessonUpgrade6Effect: format(window.oganessonLogic.upg6Effect(game), 2),
+				oganessonUpgrade7Effect: format(window.oganessonLogic.upg7Effect(game), 2)
+			})
+			window.ui.update.setResourceText(26, ogaText)
+		} else {
+			document.getElementById("oganesson").textContent = ogaText
+			document.getElementsByClassName("resourceText")[26].textContent = ogaText
+			document.getElementById("oganessonPerSecond").textContent = format(game.oganessonPerSecond, 0)
+      document.getElementById("oganessonUpgrade1Effect").textContent = format(window.oganessonLogic.upg1Effect(game), 2)
+      document.getElementById("oganessonUpgrade2Effect").textContent = format(window.oganessonLogic.upg2Effect(game), 2)
+      document.getElementById("oganessonUpgrade3Effect").textContent = format(window.oganessonLogic.upg3Effect(game), 2)
+      document.getElementById("oganessonUpgrade5Effect").textContent = format(window.oganessonLogic.upg5Effect(game), 2)
+      document.getElementById("oganessonUpgrade6Effect").textContent = format(window.oganessonLogic.upg6Effect(game), 2)
+      document.getElementById("oganessonUpgrade7Effect").textContent = format(window.oganessonLogic.upg7Effect(game), 2)
+		}
   }
   if (game.unlocks >= 33) {
     game.lightEssencePerSecond = window.essenceLogic.calculateLightEssencePerSecond(game)
