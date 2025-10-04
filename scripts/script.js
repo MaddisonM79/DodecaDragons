@@ -1408,72 +1408,13 @@ function updateFire() {
 
 // Helper function: Calculate and update gold per second and gold per click
 function updateGold() {
-  //Gold/second formula and multipliers
-  game.goldPerSecond = game.miners.mul(game.fire.div(10).add(1).log10().mul(2).add(1))
-  if (game.unlocks >= 2) {
-    if (game.darkMagicUpgradesBought[5]) {game.goldPerSecond = game.goldPerSecond.mul(new Decimal(5).pow(game.fireUpgrade2Bought.pow(0.8)))}
-    else if (game.magicUpgradesBought[8]) {game.goldPerSecond = game.goldPerSecond.mul(new Decimal(1.6).pow(game.fireUpgrade2Bought.pow(0.8)))}
-    else {game.goldPerSecond = game.goldPerSecond.mul(new Decimal(1.25).pow(game.fireUpgrade2Bought.pow(0.8)))}
-    if (game.platinumUpgradesBought[8] > 0) {game.goldPerSecond = game.goldPerSecond.mul(game.fireUpgrade4Bought.pow(game.miners.pow(0.3)).pow(game.platinumUpgradesBought[8] / 4).add(1))}
-    else {game.goldPerSecond = game.goldPerSecond.mul(game.fireUpgrade4Bought.pow(1.5).mul(game.miners).div(50).add(1))}
-  }
-  if (game.unlocks >= 3) game.goldPerSecond = game.goldPerSecond.mul(1 + game.platinumUpgradesBought[0] * 0.2)
-  if (game.platinumUpgradesBought[5] > 0) game.goldPerSecond = game.goldPerSecond.mul(platinumUpgrade6Effect)
-  if (game.challengesActive && game.selectedChallenges[3]) game.goldPerSecond = game.goldPerSecond.div(1e25)
-  if (game.unlocks >= 4) game.goldPerSecond = game.goldPerSecond.mul(game.magicEffect)
-  if (game.magicUpgradesBought[0]) game.goldPerSecond = game.goldPerSecond.mul(game.gold.add(1).log10().add(1))
-  if (game.magicUpgradesBought[2]) game.goldPerSecond = game.goldPerSecond.mul(55.5)
-  if (game.magicUpgradesBought[5]) {
-    if (game.magicUpgradesBought[9]) {game.goldPerSecond = game.goldPerSecond.mul(game.miners.pow(3).add(1))}
-    else {game.goldPerSecond = game.goldPerSecond.mul(game.miners.pow(1.5).add(1))}
-  }
-  if (game.unlocks >= 5) {
-    if (game.violetSigilUpgradesBought[2].eq(1)) {game.goldPerSecond = game.goldPerSecond.mul(game.magifolds.pow(game.magifolds.add(10).log10().log10().add(8)))}
-    else if (game.darkMagicUpgradesBought[3]) {game.goldPerSecond = game.goldPerSecond.mul(game.magifolds.pow(8))}
-    else if (game.magicUpgradesBought[18]) {game.goldPerSecond = game.goldPerSecond.mul(game.magifolds.pow(6))}
-    else {game.goldPerSecond = game.goldPerSecond.mul(game.magifolds.pow(4))}
-  }
-  if (game.dragonStage >= 5) game.goldPerSecond = game.goldPerSecond.pow(game.dragonTimeEffect)
-  if (game.unlocks >= 10) {
-    if (!game.inHell || game.currentHellLayer < 2) game.goldPerSecond = game.goldPerSecond.pow(new Decimal(1.2).pow(game.cyanSigilUpgradesBought[2].pow(0.4)))
-  }
-  if (game.tomeUpgradesBought[3]) game.goldPerSecond = game.goldPerSecond.pow(game.platinum.add(1e10).slog().div(2))
-  if (game.holyDodecahedronUpgradesBought[4]) game.goldPerSecond = game.goldPerSecond.pow(game.redSigils.pow(0.2).add(1))
-  if (game.challengesActive && game.selectedChallenges[1]) game.goldPerSecond = game.goldPerSecond.pow(0.25)
-  if (game.inHell) { //Can definitely be made better using a switch
-    if (game.currentHellLayer == 1) game.goldPerSecond = game.goldPerSecond.add(1).log10().pow(5)
-    else if (game.currentHellLayer == 2) game.goldPerSecond = game.goldPerSecond.add(1).log10().pow(2)
-    else if (game.currentHellLayer == 3) game.goldPerSecond = game.goldPerSecond.add(1).log10()
-    else if (game.currentHellLayer == 4) game.goldPerSecond = game.goldPerSecond.add(1).log10().pow(0.5)
-    else if (game.currentHellLayer == 5) game.goldPerSecond = game.goldPerSecond.add(1).log10().pow(0.2)
-    if (game.holyOctahedronUpgradesBought[1]) game.goldPerSecond = game.goldPerSecond.mul(1e250)
-    if (game.tomeUpgradesBought[10]) game.goldPerSecond = game.goldPerSecond.pow(game.blood.add(1).log10().add(1))
-  }
+  // Use extracted pure functions from goldLogic.js
+  const { calculateGoldPerSecond, calculateGoldPerClick } = window.goldLogic;
 
-  //Gold/click formula and multipliers
-  if (game.magicUpgradesBought[8]) {game.goldPerClick = game.fireUpgrade3Bought.pow(12).mul(4).add(1)}
-  else {game.goldPerClick = game.fireUpgrade3Bought.pow(2.6).mul(4).add(1)}
-  if (game.unlocks >= 4) game.goldPerClick = game.goldPerClick.mul(game.magicEffect)
-  if (game.magicUpgradesBought[0]) game.goldPerClick = game.goldPerClick.mul(game.gold.add(1).log10().add(1))
-  if (game.magicUpgradesBought[2]) game.goldPerClick = game.goldPerClick.mul(55.5)
-  if (game.unlocks >= 5) {
-    if (game.violetSigilUpgradesBought[2].eq(1)) {game.goldPerClick = game.goldPerClick.mul(game.magifolds.pow(game.magifolds.add(10).log10().log10().add(8)))}
-    else if (game.darkMagicUpgradesBought[3]) {game.goldPerClick = game.goldPerClick.mul(game.magifolds.pow(8))}
-    else if (game.magicUpgradesBought[18]) {game.goldPerClick = game.goldPerClick.mul(game.magifolds.pow(6))}
-    else {game.goldPerClick = game.goldPerClick.mul(game.magifolds.pow(4))}
-  }
-  if (game.dragonStage >= 5) game.goldPerClick = game.goldPerClick.pow(game.dragonTimeEffect)
-  if (game.challengesActive && game.selectedChallenges[1]) game.goldPerClick = game.goldPerClick.pow(0.25)
-  if (game.challengesActive && game.selectedChallenges[3]) game.goldPerClick = new Decimal(20)
-  if (game.inHell) { //Can definitely be made better using a switch
-    if (game.currentHellLayer == 1) game.goldPerClick = game.goldPerClick.add(1).log10().pow(5)
-    else if (game.currentHellLayer == 2) game.goldPerClick = game.goldPerClick.add(1).log10().pow(2)
-    else if (game.currentHellLayer == 3) game.goldPerClick = game.goldPerClick.add(1).log10()
-    else if (game.currentHellLayer == 4) game.goldPerClick = game.goldPerClick.add(1).log10().pow(0.5)
-    else if (game.currentHellLayer == 5) game.goldPerClick = game.goldPerClick.add(1).log10().pow(0.2)
-    if (game.holyOctahedronUpgradesBought[1]) game.goldPerClick = game.goldPerClick.mul(1e250)
-    if (game.tomeUpgradesBought[10]) game.goldPerClick = game.goldPerClick.pow(game.blood.add(1).log10().add(1))
-  }
+  game.goldPerSecond = calculateGoldPerSecond(game)
+  game.goldPerClick = calculateGoldPerClick(game)
+
+  // UI updates
   if (window.ui && window.ui.update) {
     window.ui.update.setText('gold', format(game.gold, 0))
     window.ui.update.setText('goldPerSecond', format(game.goldPerSecond, 0))

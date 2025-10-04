@@ -7,7 +7,10 @@ function buyMiner() {
     //Subtracts gold based on cost, adds a miner, updates the cost
     if (game.gold.lt("e1e9")) game.gold = Decimal.max(game.gold.sub(game.minerCost), 0)
     game.miners = game.miners.add(1)
-    game.minerCost = new Decimal(1.1).sub(game.platinumUpgradesBought[3] * 0.005).pow(game.miners).mul(20).floor()
+
+    // Use extracted logic from goldLogic.js
+    game.minerCost = window.goldLogic.calculateMinerCost(game.miners, game.platinumUpgradesBought)
+
     if (window.ui && window.ui.update) {
       window.ui.update.setText('minerCost', format(game.minerCost, 0))
       window.ui.update.showResourceRow(1)
@@ -26,7 +29,10 @@ function buyMaxMiners() {
     if (BMCost.lt("e1e9")) game.gold = Decimal.max(game.gold.sub(BMCost), 0)
     //game.gold = game.gold.sub(BMCost)
     game.miners = game.miners.add(BMamountCanBuy)
-    game.minerCost = new Decimal(1.1).sub(game.platinumUpgradesBought[3] * 0.005).pow(game.miners).mul(20).floor()
+
+    // Use extracted logic from goldLogic.js
+    game.minerCost = window.goldLogic.calculateMinerCost(game.miners, game.platinumUpgradesBought)
+
     if (window.ui && window.ui.update) {
       window.ui.update.setText('minerCost', format(game.minerCost, 0))
       window.ui.update.showResourceRow(1)
